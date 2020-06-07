@@ -6,21 +6,21 @@ import com.intland.gabordicsotest.tree.model.Tree;
 
 public class FilteredTree {
 
-	private Tree filteredTree;
+	private Tree tree;
 	private String filter;
 	private Set<Long> matchingNodeIds;
 
-	public FilteredTree(Tree filteredTree, String filter, Set<Long> matchingNodeIds) {
-		this.filteredTree = filteredTree;
+	public FilteredTree(Tree tree, String filter, Set<Long> matchingNodeIds) {
+		this.tree = tree;
 		this.filter = filter;
 		this.matchingNodeIds = matchingNodeIds;
 	}
 
-	public Tree getFilteredTree() {
-		return filteredTree;
+	public Tree getTree() {
+		return tree;
 	}
-	public void setFilteredTree(Tree filteredTree) {
-		this.filteredTree = filteredTree;
+	public void setTree(Tree tree) {
+		this.tree = tree;
 	}
 
 	public String getFilter() {

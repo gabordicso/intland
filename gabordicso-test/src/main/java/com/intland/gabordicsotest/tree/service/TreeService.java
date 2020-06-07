@@ -38,13 +38,26 @@ public class TreeService {
 		}
 	}
 
-	public FilteredTree getFilteredTree(String filter) {
+	public FilteredTree getFilteredTree(String filter) throws IOException {
 		synchronized(TreeService.class) {
-			// TODO
-			return null;
+			Set<Long> matchingNodeIds = new TreeSet<Long>();
+			Set<Long> nodeIdsOfMatchingSubTree = new TreeSet<Long>();
+			Set<Long> currentNodePath = new TreeSet<Long>();
+			Set<Long> visitedIds = new TreeSet<Long>();
+
+			lookForMatchingNodesRecursively(filter, rootNodeId, matchingNodeIds, nodeIdsOfMatchingSubTree, currentNodePath, visitedIds);
+			
+			Tree subTree = new Tree();
+			Map<Long, Node> nodes = new HashMap<>();
+			for (Long nodeId : nodeIdsOfMatchingSubTree) {
+				nodes.put(nodeId, getNodeById(nodeId));
+			}
+			subTree.setNodes(nodes);
+			FilteredTree filteredTree = new FilteredTree(subTree, filter, matchingNodeIds);
+			return filteredTree;
 		}
 	}
-
+	
 	public Node getNodeById(Long id) throws IOException {
 		synchronized(TreeService.class) {
 			return getCachedTree().getNodes().get(id);
@@ -66,6 +79,7 @@ public class TreeService {
 			}
 			Long id = getNewNodeId();
 			node.setId(id);
+			node.setChildren(new TreeSet<Long>());
 			getCachedTree().getNodes().put(id, node);
 			parentNode.getChildren().add(id);
 			saveCachedTree();
@@ -78,34 +92,47 @@ public class TreeService {
 	public Node updateNode(Node node) throws ValidationException, IOException {
 		// TODO refactor method
 		synchronized(TreeService.class) {
-			// node id may not be changed (also doesn't make sense since we are using the id to find the node to be updated)
+			// node id may not be changed (wouldn't make sense anyway since we are using the id to identify the node to be updated)
 			// it is possible to change the root node's name and content, but not its parentId
-			final boolean isRootNode = (rootNodeId.equals(node.getId())); // TODO test case: updating root node with non-null parentId
+			final boolean isRootNode = (rootNodeId.equals(node.getId()));
 			ValidationResult result = NodeValidator.validateUpdatedNode(node, isRootNode);
 			if (!result.isValid()) {
 				throw new ValidationException(result);
 			}
 			NodeValidator.sanitizeNode(node);
 			Long nodeId = node.getId();
-			Node currentNode = getCachedTree().getNodes().get(nodeId);
-			if (currentNode == null) {
+			Node existingNode = getCachedTree().getNodes().get(nodeId);
+			if (existingNode == null) {
 				result.addError(ValidationError.ID_INVALID);
 				throw new ValidationException(result);
 			}
-			Long parentId = node.getParentId();
-			boolean parentChanged = !isRootNode && !currentNode.getParentId().equals(parentId);
+			Long newParentId = node.getParentId();
+			Long oldParentId = existingNode.getParentId();
+			boolean parentChanged = !isRootNode && !oldParentId.equals(newParentId);
 			if (parentChanged) {
-				if (getNodeById(parentId) == null) {
+				Node newParentNode = getNodeById(newParentId);
+
+				if (newParentNode == null) {
 					result.addError(ValidationError.PARENTID_INVALID);
 					throw new ValidationException(result);
 				}
-				Set<Long> childIds = getChildIdsRecursively(nodeId);
-				if (childIds.contains(parentId)) {
+
+				Set<Long> childIds = getChildIds(nodeId);
+				if (childIds.contains(newParentId)) {
 					result.addError(ValidationError.PARENTID_CHILD);
 					throw new ValidationException(result);
 				}
-				// TODO handle parentId change
-				// if parentId changed, validate that the new parent is not a child node, then remove node id from children of old parent and add it to children of new parent
+				
+				Node oldParentNode = getNodeById(oldParentId);
+
+				oldParentNode.getChildren().remove(nodeId);
+				newParentNode.getChildren().add(nodeId);
+				
+				existingNode.setParentId(newParentId);
+				existingNode.setName(node.getName());
+				existingNode.setContent(node.getContent());
+				
+				saveCachedTree();
 			}
 
 			return node;
@@ -134,7 +161,7 @@ public class TreeService {
 			Node parentNode = getNodeById(parentId);
 			parentNode.getChildren().remove(id);
 			getCachedTree().getNodes().remove(id);
-			Set<Long> childIds = getChildIdsRecursively(id);
+			Set<Long> childIds = getChildIds(id);
 			for (Long nodeId : childIds) {
 				getCachedTree().getNodes().remove(nodeId);
 			}
@@ -144,15 +171,28 @@ public class TreeService {
 
 
 	
-	private Set<Long> getChildIdsRecursively(Long nodeId) {
-		return getChildIdsRecursively(nodeId, new HashSet<>()); // TODO ensure no infinite loop can occur
+	private Set<Long> getChildIds(Long nodeId) throws IOException {
+		Set<Long> ids = new HashSet<>();
+		Set<Long> visitedIds = new HashSet<>();
+		collectChildIdsRecursively(nodeId, ids, visitedIds);
+		return ids;
 	}
 
 
 
-	private Set<Long> getChildIdsRecursively(Long nodeId, Set<Long> ids) {
-		// TODO Auto-generated method stub
-		return null;
+	private void collectChildIdsRecursively(Long nodeId, Set<Long> ids, Set<Long> visitedIds) throws IOException {
+		if (visitedIds.contains(nodeId)) {
+			// safety measure against accidental infinite loop
+			throw new RuntimeException("Infinite loop detected");
+		}
+		visitedIds.add(nodeId);
+
+		Node node = getNodeById(nodeId); // node can not be null
+		Set<Long> currentChildren = node.getChildren();
+		ids.addAll(currentChildren);
+		for (Long childId : currentChildren) {
+			collectChildIdsRecursively(childId, ids, visitedIds);
+		}
 	}
 
 
@@ -161,8 +201,9 @@ public class TreeService {
 		if (cachedTree == null) {
 			synchronized(TreeService.class) {
 				if (cachedTree == null) {
-					cachedTree = repo.loadTree();
-					if (cachedTree == null) {
+					try {
+						cachedTree = repo.loadTree();
+					} catch (IOException e) {
 						cachedTree = getEmptyTree();
 						saveCachedTree();
 					}
@@ -198,6 +239,45 @@ public class TreeService {
 			}
 		}
 		return maxId + 1;
+	}
+
+	private void lookForMatchingNodesRecursively(
+			String filter,
+			Long currentNodeId,
+			Set<Long> matchingNodeIds,
+			Set<Long> nodeIdsOfMatchingSubTree,
+			Set<Long> currentNodePath,
+			Set<Long> visitedIds) throws IOException {
+		/*
+		 * - start at root, then test its children, then the next level and so on; for each node visited, check if it matches the filter, if yes, add the node id to the matching node ids and add the path of the node to the nodes in path; in each recursive call, the path of the visited node must be passed as argument and added to the path set if needed
+		// - find content by search string, return all matching nodes and the path up to the root node, flagging nodes by whether they match or not
+		// - for search, first loop through all nodes and see if they match, collect them in a search result map flagging them as matching nodes, then trace each node back to the root and if a particular node is not yet in the search result map, add it and flag it as non-matching
+		 * */
+		if (visitedIds.contains(currentNodeId)) {
+			// safety measure against accidental infinite loop
+			throw new RuntimeException("Infinite loop detected");
+		}
+		visitedIds.add(currentNodeId);
+		Node currentNode = getNodeById(currentNodeId);
+		boolean isMatchingNode = isMatchingNode(currentNode, filter);
+		if (isMatchingNode) {
+			matchingNodeIds.add(currentNodeId);
+			nodeIdsOfMatchingSubTree.addAll(currentNodePath);
+			nodeIdsOfMatchingSubTree.add(currentNodeId);
+		}
+		Set<Long> currentNodeChildren = currentNode.getChildren();
+		for (Long childId : currentNodeChildren) {
+			Set<Long> currentChildPath = new TreeSet<Long>();
+			currentChildPath.addAll(currentNodePath);
+			currentChildPath.add(currentNodeId);
+			lookForMatchingNodesRecursively(filter, childId, matchingNodeIds, nodeIdsOfMatchingSubTree, currentChildPath, visitedIds);
+		}
+	}
+
+
+
+	private boolean isMatchingNode(Node node, String filter) {
+		return (node.getName().toUpperCase().contains(filter.toUpperCase()));
 	}
 
 }
