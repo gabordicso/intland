@@ -89,7 +89,7 @@ public class TreeService {
 			node.setContent(inputNode.getContent());
 			node.setName(inputNode.getName());
 			node.setParentId(parentId);
-			node.setChildren(new TreeSet<Long>());
+			node.setChildren(ConcurrentHashMap.newKeySet()); // force concurrent set
 			getCachedTree().getNodes().put(id, node);
 			parentNode.getChildren().add(id);
 			saveCachedTree();

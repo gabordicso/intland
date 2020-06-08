@@ -2,12 +2,15 @@ package com.intland.gabordicsotest.tree.model;
 
 import java.util.Set;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
+@JsonDeserialize(converter = NodeConverter.class)
 public class Node {
 	private Long id;
 	private Long parentId;
 	private String name;
 	private String content;
-	private Set<Long> children;
+	private volatile Set<Long> children;
 
 	public Node() { }
 
@@ -52,13 +55,5 @@ public class Node {
 	}
 	public void setChildren(Set<Long> children) {
 		this.children = children;
-	}
-	
-	public void addChild(Long childId) {
-		this.children.add(childId);
-	}
-	
-	public void removeChild(Long childId) {
-		this.children.remove(childId);
 	}
 }

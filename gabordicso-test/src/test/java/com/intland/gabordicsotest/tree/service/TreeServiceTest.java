@@ -1,8 +1,8 @@
 package com.intland.gabordicsotest.tree.service;
 
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -92,7 +92,7 @@ public class TreeServiceTest {
 		updatedRoot.setId(TreeService.rootNodeId);
 		updatedRoot.setContent(newContent);
 		updatedRoot.setName(newName);
-		updatedRoot.setChildren(new HashSet<>());
+		updatedRoot.setChildren(ConcurrentHashMap.newKeySet());
 		updatedRoot.getChildren().add(nonExistentNodeId);
 
 		// act
