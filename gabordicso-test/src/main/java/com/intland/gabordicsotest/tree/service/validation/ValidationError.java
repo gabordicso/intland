@@ -8,6 +8,7 @@ public enum ValidationError {
 	PARENTID_NULL("Property 'parentId' must be set"),
 	PARENTID_NOT_NULL("Property 'parentId' must not be set"),
 	PARENTID_INVALID("Property 'parentId' points to a node that does not exist"),
+	PARENTID_SELF("Property 'parentId' points to the node being updated"),
 	PARENTID_CHILD("Property 'parentId' points to a child node"),
 	NAME_EMPTY("Name must be set"),
 	CONTENT_EMPTY("Content must be set")

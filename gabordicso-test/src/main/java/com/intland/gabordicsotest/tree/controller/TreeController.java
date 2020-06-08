@@ -19,6 +19,8 @@ import com.intland.gabordicsotest.tree.service.validation.ValidationException;
 @RestController
 @RequestMapping("/")
 public class TreeController {
+	// known problems and limitations: no CSRF protection
+
 	TreeService service;
 	
 	public TreeController(TreeService service) {
@@ -36,6 +38,20 @@ public class TreeController {
 		} catch (IOException e) {
 			e.printStackTrace();
 			throw new Exception("Error reading tree");
+		}
+	}
+
+	@RequestMapping(
+			value = "/tree",
+			method = RequestMethod.DELETE,
+            consumes = MediaType.ALL_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+	public void deleteTree() throws Exception {
+		try {
+			service.resetTree();
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new Exception("Error deleting tree");
 		}
 	}
 

@@ -1,11 +1,10 @@
 package com.intland.gabordicsotest.tree.service;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.stereotype.Service;
 
@@ -17,10 +16,10 @@ import com.intland.gabordicsotest.tree.service.validation.ValidationResult;
 
 @Service
 public class TreeService {
-	private static final Long rootNodeId = 1L;
+	public static final Long rootNodeId = 1L;
 	
-	private TreeRepo repo;
-	private Tree cachedTree = null;
+	private final TreeRepo repo;
+	private volatile Tree cachedTree = null;
 
 	public TreeService(TreeRepo repo) {
 		this.repo = repo;
@@ -28,6 +27,13 @@ public class TreeService {
 
 
 	
+	public void resetTree() throws IOException {
+		synchronized(TreeService.class) {
+			cachedTree = getEmptyTree();
+			saveCachedTree();
+		}		
+	}
+
 	public Tree getTree() throws IOException {
 		synchronized(TreeService.class) {
 			return getCachedTree();
@@ -48,7 +54,7 @@ public class TreeService {
 			lookForMatchingNodesRecursively(filter, rootNodeId, matchingNodeIds, nodeIdsOfMatchingSubTree, currentNodePath, visitedIds);
 			
 			Tree subTree = new Tree();
-			Map<Long, Node> nodes = new HashMap<>();
+			ConcurrentHashMap<Long, Node> nodes = new ConcurrentHashMap<>();
 			for (Long nodeId : nodeIdsOfMatchingSubTree) {
 				nodes.put(nodeId, getNodeById(nodeId));
 			}
@@ -64,21 +70,25 @@ public class TreeService {
 		}
 	}
 
-	public Node createNode(Node node) throws ValidationException, IOException {
+	public Node createNode(Node inputNode) throws ValidationException, IOException {
 		synchronized(TreeService.class) {
-			ValidationResult result = NodeValidator.validateNewNode(node);
+			ValidationResult result = NodeValidator.validateNewNode(inputNode);
 			if (!result.isValid()) {
 				throw new ValidationException(result);
 			}
-			NodeValidator.sanitizeNode(node);
-			Long parentId = node.getParentId();
+			NodeValidator.sanitizeNode(inputNode);
+			Long parentId = inputNode.getParentId();
 			Node parentNode = getNodeById(parentId);
 			if (parentNode == null) {
 				result.addError(ValidationError.PARENTID_INVALID);
 				throw new ValidationException(result);
 			}
+			Node node = new Node();
 			Long id = getNewNodeId();
 			node.setId(id);
+			node.setContent(inputNode.getContent());
+			node.setName(inputNode.getName());
+			node.setParentId(parentId);
 			node.setChildren(new TreeSet<Long>());
 			getCachedTree().getNodes().put(id, node);
 			parentNode.getChildren().add(id);
@@ -89,24 +99,28 @@ public class TreeService {
 
 
 
-	public Node updateNode(Node node) throws ValidationException, IOException {
+	public Node updateNode(Node inputNode) throws ValidationException, IOException {
 		// TODO refactor method
 		synchronized(TreeService.class) {
 			// node id may not be changed (wouldn't make sense anyway since we are using the id to identify the node to be updated)
 			// it is possible to change the root node's name and content, but not its parentId
-			final boolean isRootNode = (rootNodeId.equals(node.getId()));
-			ValidationResult result = NodeValidator.validateUpdatedNode(node, isRootNode);
+			final boolean isRootNode = (rootNodeId.equals(inputNode.getId()));
+			ValidationResult result = NodeValidator.validateUpdatedNode(inputNode, isRootNode);
 			if (!result.isValid()) {
 				throw new ValidationException(result);
 			}
-			NodeValidator.sanitizeNode(node);
-			Long nodeId = node.getId();
+			NodeValidator.sanitizeNode(inputNode);
+			Long nodeId = inputNode.getId();
 			Node existingNode = getCachedTree().getNodes().get(nodeId);
 			if (existingNode == null) {
 				result.addError(ValidationError.ID_INVALID);
 				throw new ValidationException(result);
 			}
-			Long newParentId = node.getParentId();
+
+			existingNode.setName(inputNode.getName());
+			existingNode.setContent(inputNode.getContent());
+
+			Long newParentId = inputNode.getParentId();
 			Long oldParentId = existingNode.getParentId();
 			boolean parentChanged = !isRootNode && !oldParentId.equals(newParentId);
 			if (parentChanged) {
@@ -114,6 +128,11 @@ public class TreeService {
 
 				if (newParentNode == null) {
 					result.addError(ValidationError.PARENTID_INVALID);
+					throw new ValidationException(result);
+				}
+
+				if (nodeId.equals(newParentId)) {
+					result.addError(ValidationError.PARENTID_SELF);
 					throw new ValidationException(result);
 				}
 
@@ -129,13 +148,11 @@ public class TreeService {
 				newParentNode.getChildren().add(nodeId);
 				
 				existingNode.setParentId(newParentId);
-				existingNode.setName(node.getName());
-				existingNode.setContent(node.getContent());
 				
 				saveCachedTree();
 			}
 
-			return node;
+			return existingNode;
 		}
 	}
 
@@ -160,17 +177,56 @@ public class TreeService {
 			Long parentId = node.getParentId();
 			Node parentNode = getNodeById(parentId);
 			parentNode.getChildren().remove(id);
-			getCachedTree().getNodes().remove(id);
 			Set<Long> childIds = getChildIds(id);
 			for (Long nodeId : childIds) {
 				getCachedTree().getNodes().remove(nodeId);
 			}
+			getCachedTree().getNodes().remove(id);
 			saveCachedTree();
 		}
 	}
 
 
 	
+	private Tree getCachedTree() throws IOException {
+		if (cachedTree == null) {
+			synchronized(TreeService.class) {
+				if (cachedTree == null) {
+					cachedTree = repo.loadTree();
+				}
+			}
+		}
+		return cachedTree;
+	}
+
+	private void saveCachedTree() throws IOException {
+		synchronized(TreeService.class) {
+			repo.saveTree(cachedTree);
+		}
+	}
+
+	private Tree getEmptyTree() {
+		ConcurrentHashMap<Long, Node> nodes = new ConcurrentHashMap<>();
+		nodes.put(rootNodeId, getRootNode());
+		Tree tree = new Tree();
+		tree.setNodes(nodes);
+		return tree;
+	}
+
+	private Node getRootNode() {
+		return new Node(rootNodeId, null, "Root node", "Root node content", new TreeSet<>());
+	}
+
+	private Long getNewNodeId() throws IOException {
+		Long maxId = null;
+		for (Long currentId : getCachedTree().getNodes().keySet()) {
+			if (maxId == null || currentId.compareTo(maxId) > 0) {
+				maxId = currentId;
+			}
+		}
+		return maxId + 1;
+	}
+
 	private Set<Long> getChildIds(Long nodeId) throws IOException {
 		Set<Long> ids = new HashSet<>();
 		Set<Long> visitedIds = new HashSet<>();
@@ -196,50 +252,6 @@ public class TreeService {
 	}
 
 
-
-	private Tree getCachedTree() throws IOException {
-		if (cachedTree == null) {
-			synchronized(TreeService.class) {
-				if (cachedTree == null) {
-					try {
-						cachedTree = repo.loadTree();
-					} catch (IOException e) {
-						cachedTree = getEmptyTree();
-						saveCachedTree();
-					}
-				}
-			}
-		}
-		return cachedTree;
-	}
-
-	private void saveCachedTree() throws IOException {
-		synchronized(TreeService.class) {
-			repo.saveTree(cachedTree);
-		}
-	}
-
-	private Node getRootNode() {
-		return new Node(rootNodeId, null, "Root node", "Root node content", new TreeSet<>());
-	}
-
-	private Tree getEmptyTree() {
-		Map<Long, Node> nodes = new HashMap<>();
-		nodes.put(rootNodeId, getRootNode());
-		Tree tree = new Tree();
-		tree.setNodes(nodes);
-		return tree;
-	}
-
-	private Long getNewNodeId() throws IOException {
-		Long maxId = null;
-		for (Long currentId : getCachedTree().getNodes().keySet()) {
-			if (maxId == null || currentId.compareTo(maxId) > 0) {
-				maxId = currentId;
-			}
-		}
-		return maxId + 1;
-	}
 
 	private void lookForMatchingNodesRecursively(
 			String filter,
