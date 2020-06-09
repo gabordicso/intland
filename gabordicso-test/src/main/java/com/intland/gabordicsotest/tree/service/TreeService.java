@@ -27,6 +27,10 @@ public class TreeService {
 
 
 	
+	/**
+	 * 
+	 * @throws IOException
+	 */
 	public void resetTree() throws IOException {
 		synchronized(TreeService.class) {
 			cachedTree = getEmptyTree();
@@ -34,6 +38,11 @@ public class TreeService {
 		}		
 	}
 
+	/**
+	 * 
+	 * @return
+	 * @throws IOException
+	 */
 	public Tree getTree() throws IOException {
 		synchronized(TreeService.class) {
 			return getCachedTree();
@@ -44,6 +53,12 @@ public class TreeService {
 		}
 	}
 
+	/**
+	 * 
+	 * @param filter
+	 * @return
+	 * @throws IOException
+	 */
 	public FilteredTree getFilteredTree(String filter) throws IOException {
 		synchronized(TreeService.class) {
 			Set<Long> matchingNodeIds = new TreeSet<Long>();
@@ -188,6 +203,14 @@ public class TreeService {
 
 
 	
+	private Tree getEmptyTree() {
+		ConcurrentHashMap<Long, Node> nodes = new ConcurrentHashMap<>();
+		nodes.put(rootNodeId, new Node(rootNodeId, null, "Root node", "Root node content", new TreeSet<>()));
+		Tree tree = new Tree();
+		tree.setNodes(nodes);
+		return tree;
+	}
+
 	private Tree getCachedTree() throws IOException {
 		if (cachedTree == null) {
 			synchronized(TreeService.class) {
@@ -203,18 +226,6 @@ public class TreeService {
 		synchronized(TreeService.class) {
 			repo.saveTree(cachedTree);
 		}
-	}
-
-	private Tree getEmptyTree() {
-		ConcurrentHashMap<Long, Node> nodes = new ConcurrentHashMap<>();
-		nodes.put(rootNodeId, getRootNode());
-		Tree tree = new Tree();
-		tree.setNodes(nodes);
-		return tree;
-	}
-
-	private Node getRootNode() {
-		return new Node(rootNodeId, null, "Root node", "Root node content", new TreeSet<>());
 	}
 
 	private Long getNewNodeId() throws IOException {
