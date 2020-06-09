@@ -79,6 +79,12 @@ public class TreeService {
 		}
 	}
 	
+	/**
+	 * Returns a {@link Node} object representing the node with the given {@code id} in the tree, or {@code null} if no node found with that id.
+	 * @param id the id of the node
+	 * @return the node, or {@code null} if node not found
+	 * @throws IOException if there is a problem reading the tree
+	 */
 	public Node getNodeById(Long id) throws IOException {
 		synchronized(TreeService.class) {
 			return getCachedTree().getNodes().get(id);

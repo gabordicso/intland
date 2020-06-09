@@ -4,6 +4,11 @@ import java.util.Set;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
+/**
+ * Class that represents a node in the tree.
+ * @author Gabor Dicso
+ *
+ */
 @JsonDeserialize(converter = NodeConverter.class)
 public class Node {
 	private Long id;
