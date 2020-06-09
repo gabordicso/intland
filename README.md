@@ -4,6 +4,6 @@ This project is an implementation of a simple, tree based content management ser
 You'll need Java 8 and Maven 3.x to build and run the project.
 ## Usage
 ### Build
-Clone the project, cd to the `gabordicso-test` folder, and run `mvn clean package`.
+Clone the project, cd to the `gabordicso-test` folder, and run `mvn clean package`. It will build the project, package it in a `.war` file, and run the unit tests and integration tests.
 ### Run
 In the `gabordicso-test` folder, cd to `target` and run `java -jar target/gabordicso-test-0.0.1-SNAPSHOT.war`. Then open http://localhost:8080/ in your browser.
