@@ -35,37 +35,8 @@ public class TreeServiceTest {
 		repo = null;
 	}
 	
-	/*
-	 * Test cases:
-	 * x - initial tree
-	 * x - update root
-	 * x - try to set parentId for root
-	 * x - add node under root
-	 * x - add 2 nodes under root
-	 * x - add 2 nodes, one under root, one under the other one
-	 * x - get node by id, valid id
-	 * x - get node by id, invalid id
-	 * x - try to delete root node, fail
-	 * x - delete node by id, verify that the tree does not contain it afterwards, try to get node by id, should return null
-	 * x - create the same node twice, two instances created
-	 * x - update an existing node (not using the same node instance in the test!), no new node created
-	 * x - update an existing node twice, no new node created
-	 * x - update a non-existent node, fail
-	 * x - delete a node with no children, test that only that node got deleted
-	 * x - delete a node with children on at least 2 levels, test that no other nodes got deleted
-	 * x - update parent of an existing node to another node that is not a child
-	 * x - try to update parent of an existing node to itself, fail
-	 * x - try to update parent of an existing node to one of its children, fail
-	 * x - try to update parent of an existing node to a non-existent node, fail
-	 * - search: only root matches
-	 * - search: the whole tree matches
-	 * - search: a node under root matches, it has children and siblings - only the root node and the matching node are returned, matching node ids contains the id of the matching node only
-	 * - search: no node under root matches, but one grandchild of root matches - root node, matching node's parent, and the matching node are returned, matching node ids contains the id of the matching node only
-	 * - search: root's child and root's grand-grandchild match - path to grand-grandchild returned, matching nodes marked as matching
-	 * - search: root has 3 children, one matches, the child of one of the other children also matches - return: root, matching child, matching grandchild and its parent, third child not returned at all
-	 * - search: no matches
-	 * */
-	
+
+
 	@Test
 	public void initialTree() throws IOException {
 		// arrange
@@ -149,7 +120,7 @@ public class TreeServiceTest {
 	}
 
 	@Test
-	public void createSameNodeTwice_TwoNewNodesAdded() throws IOException, ValidationException {
+	public void createNodeTwiceUsingSameInput() throws IOException, ValidationException {
 		// arrange
 		Node newNode = new Node();
 		newNode.setParentId(TreeService.rootNodeId);
@@ -394,7 +365,7 @@ public class TreeServiceTest {
 	}
 
 	@Test
-	public void updateNonExistentNode() throws ValidationException, IOException {
+	public void updateNonExistentNode_Throw() throws ValidationException, IOException {
 		// arrange
 		String name = "New node name";
 		String content = "New node content";
@@ -576,6 +547,258 @@ public class TreeServiceTest {
 		});
 	}
 	
+	@Test
+	public void searchNoResults() throws ValidationException, IOException {
+		// arrange
+		Node[] newNodes = prepare_CreateNodes(2);
+		Node newNode1 = newNodes[0];
+		Node newNode2 = newNodes[1];
+
+		service.createNode(newNode1);
+		service.createNode(newNode2);
+		String filter = "noResultsExpected";
+		
+		// act
+		FilteredTree filteredTree = service.getFilteredTree(filter);
+		
+		// assert
+		Assertions.assertEquals(0, filteredTree.getTree().getNodes().size());
+		Assertions.assertEquals(0, filteredTree.getMatchingNodeIds().size());
+		Assertions.assertEquals(filter, filteredTree.getFilter());
+	}
+	
+	@Test
+	public void searchOnlyRootMatches() throws ValidationException, IOException {
+		// arrange
+		Node[] newNodes = prepare_CreateNodes(2);
+		Node newNode1 = newNodes[0];
+		Node newNode2 = newNodes[1];
+
+		service.createNode(newNode1);
+		service.createNode(newNode2);
+		String filter = "root";
+		
+		// act
+		FilteredTree filteredTree = service.getFilteredTree(filter);
+		
+		// assert
+		Assertions.assertEquals(1, filteredTree.getTree().getNodes().size());
+		Assertions.assertEquals(1, filteredTree.getMatchingNodeIds().size());
+		Assertions.assertEquals(filter, filteredTree.getFilter());
+		Assertions.assertTrue(filteredTree.getMatchingNodeIds().contains(TreeService.rootNodeId));
+	}
+	
+	@Test
+	public void searchWholeTreeMatches() throws ValidationException, IOException {
+		// arrange
+		Node[] newNodes = prepare_CreateNodes(3);
+		Node newNode1 = newNodes[0];
+		Node newNode2 = newNodes[1];
+		Node newNode3 = newNodes[2];
+
+		Long addedNode1Id = service.createNode(newNode1).getId();
+		Long addedNode2Id = service.createNode(newNode2).getId();
+		newNode3.setParentId(addedNode1Id);
+		Long addedNode3Id = service.createNode(newNode3).getId();
+		String filter = "node";
+		
+		// act
+		FilteredTree filteredTree = service.getFilteredTree(filter);
+		Set<Long> matchingNodeIds = filteredTree.getMatchingNodeIds();
+		
+		// assert
+		Assertions.assertEquals(4, filteredTree.getTree().getNodes().size());
+		Assertions.assertEquals(4, filteredTree.getMatchingNodeIds().size());
+		Assertions.assertEquals(filter, filteredTree.getFilter());
+		Assertions.assertTrue(matchingNodeIds.contains(TreeService.rootNodeId));
+		Assertions.assertTrue(matchingNodeIds.contains(addedNode1Id));
+		Assertions.assertTrue(matchingNodeIds.contains(addedNode2Id));
+		Assertions.assertTrue(matchingNodeIds.contains(addedNode3Id));
+	}
+	
+	@Test
+	public void searchRootChildMatches() throws ValidationException, IOException {
+		/*
+		 * a node (newNode1) under root matches, it has children (newNode2, newNode3) and siblings (newNode4, newNode5)
+		 * -> only the root node and the matching node (newNode1) are returned, matching node ids contains the id of the matching node only
+		 * */
+		
+		// arrange
+		Node[] newNodes = prepare_CreateNodes(5, TreeService.rootNodeId);
+		Node newNode1 = newNodes[0];
+		Node newNode2 = newNodes[1];
+		Node newNode3 = newNodes[2];
+		Node newNode4 = newNodes[3];
+		Node newNode5 = newNodes[4];
+
+		Long addedNode1Id = service.createNode(newNode1).getId();
+		
+		newNode2.setParentId(addedNode1Id);
+		newNode3.setParentId(addedNode1Id);
+		service.createNode(newNode2).getId();
+		service.createNode(newNode3).getId();
+		
+		service.createNode(newNode4).getId();
+		service.createNode(newNode5).getId();
+		
+		String filter = "node 0"; // name of newNode1 contains "node 0"
+		
+		// act
+		FilteredTree filteredTree = service.getFilteredTree(filter);
+		Set<Long> treeNodeIds = filteredTree.getTree().getNodes().keySet();
+		Set<Long> matchingNodeIds = filteredTree.getMatchingNodeIds();
+		
+		// assert
+		Assertions.assertEquals(2, treeNodeIds.size());
+		Assertions.assertEquals(1, matchingNodeIds.size());
+		Assertions.assertEquals(filter, filteredTree.getFilter());
+		Assertions.assertTrue(treeNodeIds.contains(TreeService.rootNodeId));
+		Assertions.assertTrue(treeNodeIds.contains(addedNode1Id));
+		Assertions.assertTrue(matchingNodeIds.contains(addedNode1Id));
+	}
+	
+	@Test
+	public void searchRootGrandChildMatches() throws ValidationException, IOException {
+		/*
+		 * no node under root matches, but one grandchild of root matches
+		 * -> root node, matching node's parent, and the matching node are returned
+		 *    matching node ids contains the id of the matching node only
+		 */
+		
+		// arrange
+		Node[] newNodes = prepare_CreateNodes(5, TreeService.rootNodeId);
+		Node newNode1 = newNodes[0];
+		Node newNode2 = newNodes[1];
+		Node newNode3 = newNodes[2];
+		Node newNode4 = newNodes[3];
+		Node newNode5 = newNodes[4];
+
+		Long addedNode1Id = service.createNode(newNode1).getId();
+		
+		newNode2.setParentId(addedNode1Id);
+		newNode3.setParentId(addedNode1Id);
+		Long addedNode2Id = service.createNode(newNode2).getId();
+		service.createNode(newNode3).getId();
+		
+		service.createNode(newNode4).getId();
+		service.createNode(newNode5).getId();
+		
+		String filter = "node 1"; // name of newNode2 contains "node 1"
+		
+		// act
+		FilteredTree filteredTree = service.getFilteredTree(filter);
+		Set<Long> treeNodeIds = filteredTree.getTree().getNodes().keySet();
+		Set<Long> matchingNodeIds = filteredTree.getMatchingNodeIds();
+		
+		// assert
+		Assertions.assertEquals(3, treeNodeIds.size());
+		Assertions.assertEquals(1, matchingNodeIds.size());
+		Assertions.assertEquals(filter, filteredTree.getFilter());
+		Assertions.assertTrue(treeNodeIds.contains(TreeService.rootNodeId));
+		Assertions.assertTrue(treeNodeIds.contains(addedNode1Id));
+		Assertions.assertTrue(treeNodeIds.contains(addedNode2Id));
+		Assertions.assertTrue(matchingNodeIds.contains(addedNode2Id));
+	}
+	
+	@Test
+	public void searchRootChildAndRootGrandGrandChildMatch() throws ValidationException, IOException {
+		/*
+		 * root's child and root's grand-grandchild match
+		 * -> path to grand-grandchild returned, matching nodes marked as matching
+		 */
+
+		// arrange
+		Node[] newNodes = prepare_CreateNodes(5, TreeService.rootNodeId);
+		Node newNode1 = newNodes[0];
+		Node newNode2 = newNodes[1];
+		Node newNode3 = newNodes[2];
+		Node newNode4 = newNodes[3];
+		Node newNode5 = newNodes[4];
+		
+		String filter = "searchTerm";
+		
+		newNode1.setName(filter);
+		newNode3.setName(filter);
+
+		Long addedNode1Id = service.createNode(newNode1).getId();
+		
+		newNode2.setParentId(addedNode1Id);
+		Long addedNode2Id = service.createNode(newNode2).getId();
+
+		newNode3.setParentId(addedNode2Id);
+		Long addedNode3Id = service.createNode(newNode3).getId();
+
+		newNode4.setParentId(addedNode1Id);
+		service.createNode(newNode4).getId();
+
+		service.createNode(newNode5).getId();
+		
+		// act
+		FilteredTree filteredTree = service.getFilteredTree(filter);
+		Set<Long> treeNodeIds = filteredTree.getTree().getNodes().keySet();
+		Set<Long> matchingNodeIds = filteredTree.getMatchingNodeIds();
+		
+		// assert
+		Assertions.assertEquals(4, treeNodeIds.size());
+		Assertions.assertEquals(2, matchingNodeIds.size());
+		Assertions.assertEquals(filter, filteredTree.getFilter());
+		Assertions.assertTrue(treeNodeIds.contains(TreeService.rootNodeId));
+		Assertions.assertTrue(treeNodeIds.contains(addedNode1Id));
+		Assertions.assertTrue(treeNodeIds.contains(addedNode2Id));
+		Assertions.assertTrue(treeNodeIds.contains(addedNode3Id));
+		Assertions.assertTrue(matchingNodeIds.contains(addedNode1Id));
+		Assertions.assertTrue(matchingNodeIds.contains(addedNode3Id));
+	}
+
+
+	
+	@Test
+	public void searchRootChildDifferentRootGrandChildMatches() throws ValidationException, IOException {
+		/*
+		 * search: root has 3 children, one matches, the child of one of the other children also matches
+		 * -> return: root, matching child, matching grandchild and its parent, third child not returned at all
+		 */
+
+		// arrange
+		Node[] newNodes = prepare_CreateNodes(5, TreeService.rootNodeId);
+		Node newNode1 = newNodes[0];
+		Node newNode2 = newNodes[1];
+		Node newNode3 = newNodes[2];
+		Node newNode4 = newNodes[3];
+		Node newNode5 = newNodes[4];
+
+		String filter = "searchTerm";
+		
+		newNode1.setName(filter);
+		newNode4.setName(filter);
+
+		Long addedNode1Id = service.createNode(newNode1).getId();
+		Long addedNode2Id = service.createNode(newNode2).getId();
+		service.createNode(newNode3).getId();
+
+		newNode4.setParentId(addedNode2Id);
+		newNode5.setParentId(addedNode2Id);
+
+		Long addedNode4Id = service.createNode(newNode4).getId();
+		service.createNode(newNode5).getId();
+		
+		// act
+		FilteredTree filteredTree = service.getFilteredTree(filter);
+		Set<Long> treeNodeIds = filteredTree.getTree().getNodes().keySet();
+		Set<Long> matchingNodeIds = filteredTree.getMatchingNodeIds();
+		
+		// assert
+		Assertions.assertEquals(4, treeNodeIds.size());
+		Assertions.assertEquals(2, matchingNodeIds.size());
+		Assertions.assertEquals(filter, filteredTree.getFilter());
+		Assertions.assertTrue(treeNodeIds.contains(TreeService.rootNodeId));
+		Assertions.assertTrue(treeNodeIds.contains(addedNode1Id));
+		Assertions.assertTrue(treeNodeIds.contains(addedNode2Id));
+		Assertions.assertTrue(treeNodeIds.contains(addedNode4Id));
+		Assertions.assertTrue(matchingNodeIds.contains(addedNode1Id));
+		Assertions.assertTrue(matchingNodeIds.contains(addedNode4Id));
+	}
+
 	private Node copyNodeExcludingChildren(Node original) {
 		Node copy = new Node();
 		
@@ -586,6 +809,7 @@ public class TreeServiceTest {
 
 		return copy;
 	}
+
 	private Node[] prepare_CreateNodes(int count, Long... parentIds) {
 		Node[] nodes = new Node[count];
 		for (int i = 0; i < count; i++) {

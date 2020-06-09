@@ -19,7 +19,6 @@ import com.intland.gabordicsotest.tree.service.validation.ValidationException;
 @RestController
 @RequestMapping("/")
 public class TreeController {
-	// known problems and limitations: no CSRF protection
 
 	TreeService service;
 	
@@ -56,7 +55,7 @@ public class TreeController {
 	}
 
 	@RequestMapping(
-			value = "/filteredTree/{filter}",
+			value = "/filtered-tree/{filter}",
 			method = RequestMethod.GET,
             consumes = MediaType.ALL_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
