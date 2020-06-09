@@ -6,6 +6,6 @@ You'll need Java 8 and Maven 3.x to build and run the project.
 ### Build
 Clone the project, cd to the `gabordicso-test` folder, and run `mvn clean package`. It will build the project, run the unit tests and integration tests, and package the project in a `.war` file.
 ### Run
-In the `gabordicso-test` folder, cd to `target` and run `java -jar target/gabordicso-test-0.0.1-SNAPSHOT.war`. Then open http://localhost:8080/ in your browser.
+In the `gabordicso-test` folder, cd to `target` and run `java -jar gabordicso-test-0.0.1-SNAPSHOT.war`. Then open http://localhost:8080/ in your browser.
 ## Known problems
 The project does not provide protection against CSRF attacks.
