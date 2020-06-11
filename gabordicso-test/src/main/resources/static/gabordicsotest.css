@@ -1,0 +1,66 @@
+body {
+	margin: 0px;
+	padding: 0px;
+	width: 100%;
+	height: 100%;
+	font-family: Arial;
+}
+
+.scriptLoading {
+	color: #66f;
+}
+
+.scriptLoadError {
+	color: red;
+}
+
+.scriptLoading, .scriptLoadError {
+	width: 100%;
+	height: 100%;
+	text-align: middle;
+	font-size: 30px;
+	font-weight: bold;
+}
+
+.app_container {
+}
+
+.tree_pane {
+	width: 25%;
+	min-width: 200px;
+	min-height: 200px;
+	background-color: ;
+	height: 100%;
+	float: left;
+	border-right: 1px solid #999;
+}
+
+.content_pane {
+	width: 75%;
+	min-width: 600px;
+	min-height: 200px;
+	background-color: ;
+	height: 100%;
+	float: left;
+}
+
+.tree_container .content_container {
+	width: 100%;
+	height: 100%;
+}
+
+.tree_container {
+	background-color: ;
+}
+
+.filterTextbox {
+	float: left;
+}
+
+.btn_primary {
+	
+}
+
+.btn_a {
+	
+}

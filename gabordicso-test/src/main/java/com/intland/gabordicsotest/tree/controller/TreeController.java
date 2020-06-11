@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.intland.gabordicsotest.tree.model.Node;
@@ -60,7 +59,7 @@ public class TreeController {
             consumes = MediaType.ALL_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
 	public FilteredTree getFilteredTree(@PathVariable(name = "filter", required = true) String filter) throws IOException {
-		return service.getFilteredTree(filter);
+		return service.getFilteredTree(filter); // TODO url decode and trim filter
 	}
 
 	@RequestMapping(
@@ -86,7 +85,7 @@ public class TreeController {
 			method = RequestMethod.PUT,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-	public Node putNode(@RequestParam Node node) throws ValidationException, IOException {
+	public Node putNode(@RequestBody Node node) throws ValidationException, IOException {
 		return service.updateNode(node);
 	}
 
