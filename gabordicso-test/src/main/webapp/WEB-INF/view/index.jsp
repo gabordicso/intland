@@ -10,12 +10,14 @@
 		<script src="restclient.js"></script>
 
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-
-		<script src="loadingoverlay.min.js"></script><%/* source: https://gasparesganga.com/labs/jquery-loading-overlay/ */%>
+		 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+ 		<script src="loadingoverlay.min.js"></script><%/* source: https://gasparesganga.com/labs/jquery-loading-overlay/ */%>
 		<script src="topper.js"></script><%/* source: https://www.jqueryscript.net/other/top-notification-bar-topper.html */%>
 		<script src="jstree.min.js"></script><%/* source: https://www.jstree.com/api/#/ */%>
 
 		<link rel="stylesheet" href="gabordicsotest.css" />
+		<link rel="stylesheet" href="jquery-ui.css">
+		<link rel="stylesheet" href="jquerydemos.css">
 
 		<link rel="stylesheet" href="themes/default/style.min.css" /><% /* jstree */ %>
 		<link rel="stylesheet" href="topper.css" /><% /* topper */ %>
@@ -94,10 +96,13 @@ waitForScriptLoad();
 					<div id="filterbar" class="filterbar">
 						<input type="text" id="filterTextbox" class="filterTextbox" placeholder="Enter filter expression..." />
 						<input type="submit" id="filterButton" value="Filter tree" class="btn_primary" />
-						<a id="clearFilterButton" class="btn_a" href="javascript: void();">Clear filter</a>
+						<a id="clearFilterButton" class="btn_a" href="javascript: void(0)">Clear filter</a>
 					</div>
-					<div id="tree_container" class="tree_container">
+					<div id="tree_container" class="tree_container" style="display:none;">
 						<div id="jstree_div"></div>
+					</div>
+					<div id="noTree_container" class="tree_container" style="display:block;">
+						<h2 class="noContent">No results</h2>
 					</div>
 				</div>
 			</div>
@@ -105,18 +110,23 @@ waitForScriptLoad();
 				<div id="content_pane_inner_container" class="content_pane_inner_container">
 					<div><h1>Content</h1></div>
 					<div id="buttonbar" class="buttonbar">
-						<input type="submit" id="newChildButton" value="Add new child to current node" class="btn_primary" />
+						<input type="submit" id="addChildButton" value="Add new child to current node" class="btn_primary" />
 						<input type="submit" id="editButton" value="Edit current node" class="btn" />
-						<a id="deleteButton" class="btn_a_disabled" href="javascript: void();">Delete current node</a>
+						<a id="deleteButton" class="btn_a_disabled" href="javascript: void(0)">Delete current node</a>
 					</div>
-					<div id="content_container" class="content_container" style="display:block;">
-						<div id="content" class="content">
-							<h2 id="content_name" class="content_name">Name</h2>
-							<textarea id="content_content" class="content_content" disabled=1>Content</textarea>
-						</div>
+					<div id="noContent_container" class="content_container" style="display:block;">
+						<h2 class="noContent">Please select a node in the tree</h2>
+					</div>
+					<div id="content_container" class="content_container" style="display:none;">
+						<h2 id="nameDisplay" class="nameDisplay">Name</h2>
+						<textarea id="contentDisplay" class="contentDisplay" disabled=1>Content</textarea>
 					</div>
 				</div>
 			</div>
+		</div>
+
+		<div style="display:none;" id="deleteCurrentNodeConfirm" title="Delete current node?">
+			<p><span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>This node will be permanently deleted and cannot be recovered. Are you sure?</p>
 		</div>
 	</body>
 </html>

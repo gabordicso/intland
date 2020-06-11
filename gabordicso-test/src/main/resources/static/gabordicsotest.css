@@ -30,6 +30,9 @@ h1, h2 {
 	color: #1a608e;
 }
 
+h2.noContent {
+	font-style: italic;
+}
 .tree_pane_inner_container, .content_pane_inner_container {
 	margin: 10px;
 }
@@ -102,16 +105,19 @@ h1, h2 {
 }
 
 .btn_a_disabled {
-	color: #2792d8;
+	color: #93bedb;
 	text-decoration: none;
 	cursor: default;
 }
 
-.content_content {
+.contentDisplay {
 	color: #1a608e;
+	font-family: Arial;
+	font-size: 18px;
+	padding: 10px;
 	background-color: #f8fcfe;
 	width: calc(100% - 20px);
-	height: calc(100% - 200px);
+	height: calc(100% - 210px);
 	disabled: true;
 	border: 0px;
 	margin: 10px;

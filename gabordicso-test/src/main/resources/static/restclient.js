@@ -33,5 +33,11 @@ RESTClient.prototype = {
 		var filterUrlEncoded = encodeURIComponent(filter);
 		var url = url_filteredTree + filterUrlEncoded;
 		this.doCall(url, method_GET, null, done, fail, always);
+	},
+	
+	deleteNode: function(id, done, fail, always) {
+		id = - Math.abs(id); // TODO tmp, remove!
+		var url = url_node + parseInt(id);
+		this.doCall(url, method_DELETE, null, done, fail, always);
 	}
 }

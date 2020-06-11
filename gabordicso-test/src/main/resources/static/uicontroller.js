@@ -18,7 +18,12 @@ UIController.prototype = {
 
 		this.restClient = new RESTClient();
 		this.treeController = new TreeController(this);
-		this.contentController = new ContentController(this);
+		this.contentController = new ContentController();
+
+		this.contentController.init(this);
+		this.contentController.setNode({ name: "Test name", content: "Test content", id: 2, parentId: 1 });
+		// this.contentController.setNode({ name: "Test name", content: "Test content", id: 1, parentId: 1 });
+		// this.contentController.setNode(null);
 		
 		this.treePane = $("#" + treePaneDivId);
 		this.contentPane = $("#" + contentPaneDivId);
@@ -29,12 +34,47 @@ UIController.prototype = {
 		this.filterButton = $("#filterButton");
 		this.clearFilterButton = $("#clearFilterButton");
 
-		this.filterButton.click(this.onFilterButtonClick.bind(this));
-		this.clearFilterButton.click(this.onClearFilterButtonClick.bind(this));
-		
-		$("#testbtn").click(this.onTreeLoadStart.bind(this)); // TODO remove
+		if (this.filterButtonClickHandler == null) {
+			this.filterButtonClickHandler = this.filterButton.click(this.onFilterButtonClick.bind(this));
+		}
+		if (this.clearFilterButtonClickHandler == null) {
+			this.clearFilterButtonClickHandler = this.clearFilterButton.click(this.onClearFilterButtonClick.bind(this));
+		}
+	},
+	
+	uninit: function() {
+		this.filterButton.off("click");
+		this.clearFilterButton.off("click");
+		this.contentController.uninit();
 	},
 
+	deleteNode: function(id) {
+		this.onDeleteStart();
+		this.restClient.deleteNode(id, this.deleteNodeDone.bind(this), this.deleteNodeFail.bind(this), this.deleteNodeAlways.bind(this));
+	},
+	
+	onDeleteStart: function() {
+		$("body").LoadingOverlay("show", this.getLoadingOverlayOptions());
+	},
+	
+	deleteNodeDone: function() {
+		this.showInfo("Node deleted");
+		this.treeController.refresh();
+		this.contentController.setNode(null);
+	},
+	
+	deleteNodeFail: function() {
+		this.showError("Node could not be deleted");
+	},
+	
+	deleteNodeAlways: function() {
+		this.onDeleteEnd();
+	},
+	
+	onDeleteEnd: function() {
+		$("body").LoadingOverlay("hide", this.getLoadingOverlayOptions());
+	},
+	
 	showInfo: function(info) {
 		Topper({
 			title: 'Info',
