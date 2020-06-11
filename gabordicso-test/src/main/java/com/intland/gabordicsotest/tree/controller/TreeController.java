@@ -1,6 +1,8 @@
 package com.intland.gabordicsotest.tree.controller;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -59,7 +61,12 @@ public class TreeController {
             consumes = MediaType.ALL_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
 	public FilteredTree getFilteredTree(@PathVariable(name = "filter", required = true) String filter) throws IOException {
-		return service.getFilteredTree(filter); // TODO url decode and trim filter
+		try {
+			filter = java.net.URLDecoder.decode(filter, StandardCharsets.UTF_8.name()).trim();
+		} catch (UnsupportedEncodingException e) {
+			// not going to happen - value came from JDK's own StandardCharsets
+		}
+		return service.getFilteredTree(filter);
 	}
 
 	@RequestMapping(
@@ -86,6 +93,7 @@ public class TreeController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
 	public Node putNode(@RequestBody Node node) throws ValidationException, IOException {
+		// TODO should have a separate method for updating parent id only; url could be /node/{id}/parentId/{parentId}, method: PUT
 		return service.updateNode(node);
 	}
 

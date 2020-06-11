@@ -17,6 +17,8 @@ UIController.prototype = {
 		console.log("UIController.init()");
 
 		this.restClient = new RESTClient();
+		this.treeController = new TreeController(this);
+		this.contentController = new ContentController(this);
 		
 		this.treePane = $("#" + treePaneDivId);
 		this.contentPane = $("#" + contentPaneDivId);
@@ -40,7 +42,7 @@ UIController.prototype = {
 			style: 'info',
 			type: 'top',
 			autoclose: true,
-			autocloseAfter: 5000
+			autocloseAfter: 3000
 		});
 	},
 	
@@ -124,6 +126,6 @@ UIController.prototype = {
 	},
 	
 	getLoadingOverlayOptions: function() {
-		return { fade: [100, 100] };
+		return { fade: [100, 100], zIndex: 60009021 };
 	}
 }

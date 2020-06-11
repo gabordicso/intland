@@ -1,6 +1,6 @@
 const baseUrl = "http://localhost:8080/";
 
-const url_tree = baseUrl + "tree";
+const url_tree = baseUrl + "tree/";
 const url_filteredTree = baseUrl + "filtered-tree/";
 const url_node = baseUrl + "node/";
 
@@ -17,7 +17,6 @@ RESTClient.prototype = {
 			url: url,
 			type: method,
 			data: data,
-			// success: success,
 			dataType: "json",
 			contentType: "application/json"
 		})
@@ -32,6 +31,7 @@ RESTClient.prototype = {
 
 	loadFilteredTree: function(filter, done, fail, always) {
 		var filterUrlEncoded = encodeURIComponent(filter);
-		this.doCall(url_filteredTree + filterUrlEncoded, method_GET, null, done, fail, always);
+		var url = url_filteredTree + filterUrlEncoded;
+		this.doCall(url, method_GET, null, done, fail, always);
 	}
 }

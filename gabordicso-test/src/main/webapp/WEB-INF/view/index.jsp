@@ -5,6 +5,8 @@
 		<title>Gabor Dicso test task for Intland</title>
 
 		<script src="uicontroller.js"></script>
+		<script src="treecontroller.js"></script>
+		<script src="contentcontroller.js"></script>
 		<script src="restclient.js"></script>
 
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
@@ -59,6 +61,8 @@ function allScriptsAreLoaded() {
 	
 	dependencyTypes.push(typeof($));
 	dependencyTypes.push(typeof(UIController));
+	dependencyTypes.push(typeof(TreeController));
+	dependencyTypes.push(typeof(ContentController));
 	dependencyTypes.push(typeof(RESTClient));
 	
 	var allLoaded = true;
@@ -85,29 +89,31 @@ waitForScriptLoad();
 		<div id="scriptLoadError" style="display:none" class="scriptLoadError">Could not load page properly. Please refresh your browser.</div>
 		<div id="app_container" style="display:none" class="app_container">
 			<div id="tree_pane" class="tree_pane">
-				<div><h1>Content Tree</h1></div>
-				<div id="filterbar" class="filterbar">
-					<input type="text" id="filterTextbox" class="filterTextbox" />
-					<input type="submit" id="filterButton" value="Filter tree" class="btn_primary" />
-					<a id="clearFilterButton" class="btn_a" href="javascript: void();">clear filter</a>
-				</div>
-				<div id="tree_container" class="tree_container">
-				
-					<div id="jstree_demo_div"></div>
-					<input id="testbtn" type="submit" onclick="init()" value="Init" />
+				<div id="tree_pane_inner_container" class="tree_pane_inner_container">
+					<div><h1>Tree</h1></div>
+					<div id="filterbar" class="filterbar">
+						<input type="text" id="filterTextbox" class="filterTextbox" placeholder="Enter filter expression..." />
+						<input type="submit" id="filterButton" value="Filter tree" class="btn_primary" />
+						<a id="clearFilterButton" class="btn_a" href="javascript: void();">Clear filter</a>
+					</div>
+					<div id="tree_container" class="tree_container">
+						<div id="jstree_div"></div>
+					</div>
 				</div>
 			</div>
 			<div id="content_pane" class="content_pane">
-				<div><h1>Content Details</h1></div>
-				<div id="content_container" class="content_container">
-					<div id="buttonbar">
-						<div id="newChildButton" class="btn_primary"></div>
-						<div id="editButton" class="btn"></div>
-						<div id="deleteButton" class="btn_del"></div>
+				<div id="content_pane_inner_container" class="content_pane_inner_container">
+					<div><h1>Content</h1></div>
+					<div id="buttonbar" class="buttonbar">
+						<input type="submit" id="newChildButton" value="Add new child to current node" class="btn_primary" />
+						<input type="submit" id="editButton" value="Edit current node" class="btn" />
+						<a id="deleteButton" class="btn_a_disabled" href="javascript: void();">Delete current node</a>
 					</div>
-					<div id="content" class="content">
-						<div id="content_name" class="content_name"></div>
-						<div id="content_content" class="content_content"></div>
+					<div id="content_container" class="content_container" style="display:block;">
+						<div id="content" class="content">
+							<h2 id="content_name" class="content_name">Name</h2>
+							<textarea id="content_content" class="content_content" disabled=1>Content</textarea>
+						</div>
 					</div>
 				</div>
 			</div>
