@@ -36,18 +36,14 @@ UIController.prototype = {
 		this.contentController.uninit();
 	},
 
+
+
 	selectNode: function(selectedNode) {
 		this.contentController.setNode(selectedNode);
 	},
 	
-	onNodeManipulationStart: function() {
-		$("body").LoadingOverlay("show", this.getLoadingOverlayOptions());
-	},
-	
-	onNodeManipulationEnd: function() {
-		$("body").LoadingOverlay("hide", this.getLoadingOverlayOptions());
-	},
-	
+
+
 	createNode: function(parentNode, name, content) {
 		this.onNodeManipulationStart();
 		var node = {
@@ -73,6 +69,8 @@ UIController.prototype = {
 		this.onNodeManipulationEnd();
 	},
 	
+
+
 	updateNodeParent: function(updatedNode, newParentId) {
 		this.onNodeManipulationStart();
 		var node = {
@@ -109,6 +107,8 @@ UIController.prototype = {
 		this.onNodeManipulationEnd();
 	},
 	
+
+
 	deleteNode: function(id) {
 		this.onNodeManipulationStart();
 		this.restClient.deleteNode(id, this.deleteNodeDone.bind(this), this.deleteNodeFail.bind(this), this.deleteNodeAlways.bind(this));
@@ -128,34 +128,15 @@ UIController.prototype = {
 		this.onNodeManipulationEnd();
 	},
 	
-	showInfo: function(info) {
-		Topper({
-			title: 'Info',
-			text: info,
-			style: 'info',
-			type: 'top',
-			autoclose: true,
-			autocloseAfter: 3000
-		});
-	},
-	
-	showError: function(error) {
-		Topper({
-			title: 'Error',
-			text: error,
-			style: 'danger',
-			type: 'top',
-			autoclose: false
-		});
-	},
-	
+
+
 	loadTree: function() {
 		this.onTreeLoadStart();
 		this.restClient.loadTree(this.loadTreeDone.bind(this), this.loadTreeFail.bind(this), this.loadTreeAlways.bind(this));
 	},
 	
 	loadTreeDone: function(tree) {
-		this.treeController.setTree(tree, rootNodeId, null);
+		this.treeController.setTree(tree, null, null);
 		this.showInfo("Tree loaded");
 	},
 	
@@ -181,10 +162,40 @@ UIController.prototype = {
 		this.showError("Could not load filtered tree, please try again");
 	},
 	
+
+
+	showInfo: function(info) {
+		Topper({
+			title: 'Info',
+			text: info,
+			style: 'info',
+			type: 'top',
+			autoclose: true,
+			autocloseAfter: 3000
+		});
+	},
+	
+	showError: function(error) {
+		Topper({
+			title: 'Error',
+			text: error,
+			style: 'danger',
+			type: 'top',
+			autoclose: false
+		});
+	},
+	
+	onNodeManipulationStart: function() {
+		$("body").LoadingOverlay("show", this.getLoadingOverlayOptions());
+	},
+	
+	onNodeManipulationEnd: function() {
+		$("body").LoadingOverlay("hide", this.getLoadingOverlayOptions());
+	},
+	
 	onTreeLoadStart: function() {
 		this.treeContainer.hide();
 		this.treePane.LoadingOverlay("show", this.getLoadingOverlayOptions());
-//		setTimeout(this.onTreeLoadEnd.bind(this), 2000); // TODO remove
 	},
 
 	onTreeLoadEnd: function() {
@@ -203,6 +214,6 @@ UIController.prototype = {
 	},
 	
 	getLoadingOverlayOptions: function() {
-		return { fade: [100, 100], zIndex: 60009021 };
+		return { fade: [100, 100], zIndex: 98 };
 	}
 }

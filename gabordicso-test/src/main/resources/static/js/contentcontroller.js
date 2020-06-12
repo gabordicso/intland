@@ -11,6 +11,8 @@ const deleteButtonId = "deleteButton";
 const nameElementId = "nameDisplay";
 const contentElementId = "contentDisplay";
 const idElementId = "idElement";
+const nodeNameElementId = "nodeName";
+const nodeContentElementId = "nodeContent";
 
 var ContentController = function() {
 	this.contentContainer = $("#" + contentContainerId);
@@ -22,8 +24,8 @@ var ContentController = function() {
 	this.nameElement = $("#" + nameElementId);
 	this.contentElement = $("#" + contentElementId);
 	this.idElement = $("#" + idElementId);
-	this.nodeDialogNameField = $("#nodeName");
-	this.nodeDialogContentField = $("#nodeContent");
+	this.nodeDialogNameField = $("#" + nodeNameElementId);
+	this.nodeDialogContentField = $("#" + nodeContentElementId);
 }
 
 ContentController.prototype = {
@@ -40,6 +42,46 @@ ContentController.prototype = {
 		this.deleteButton.off("click");
 	},
 	
+
+
+	setNode: function(node) {
+		this.node = node;
+		if (node == null) {
+			this.buttonbar.hide();
+			this.contentContainer.hide();
+			this.noContentContainer.show();
+		} else {
+			this.noContentContainer.hide();
+			this.buttonbar.show();
+			this.contentContainer.show();
+			this.nameElement.html(node.name);
+			this.contentElement.val(node.content);
+			this.idElement.html("(id: " + node.id + ")");
+			var isRootNode = (node.id == rootNodeId);
+			if (isRootNode) {
+				this.disableDeleteButton();
+			} else {
+				this.enableDeleteButton();
+			}
+		}
+	},
+	
+
+
+	enableDeleteButton: function() {
+		this.deleteButton.addClass(delBtnEnabledClass);
+		this.deleteButton.removeClass(delBtnDisabledClass);
+		this.deleteButton.click(this.deleteButtonClick.bind(this));
+	},
+	
+	disableDeleteButton: function() {
+		this.deleteButton.addClass(delBtnDisabledClass);
+		this.deleteButton.removeClass(delBtnEnabledClass);
+		this.deleteButton.off("click");
+	},
+
+
+
 	addChildButtonClick: function() {
 		this.showNodeDialog(true);
 	},
@@ -48,6 +90,12 @@ ContentController.prototype = {
 		this.showNodeDialog(false);
 	},
 	
+	deleteButtonClick: function() {
+		this.showDeleteConfirmDialog();
+	},
+	
+
+
 	showNodeDialog: function(isCreate) {
 		
 		var name = "";
@@ -63,7 +111,7 @@ ContentController.prototype = {
 		}
 
 		var validate = this.validateNodeDialog.bind(this);
-		var beforeClose = this.closeNodeDialog.bind(this);
+		var beforeClose = this.beforeCloseNodeDialog.bind(this);
 		
 		this.nodeDialogNameField.val(name);
 		this.nodeDialogContentField.val(content);
@@ -91,12 +139,6 @@ ContentController.prototype = {
 		});
 	},
 	
-	closeNodeDialog: function() {
-		this.markDialogFieldAsValid(this.nodeDialogNameField, true);
-		this.markDialogFieldAsValid(this.nodeDialogContentField, true);
-		$("#validationMessage").hide();
-	},
-
 	validateNodeDialog: function() {
 		var name = this.nodeDialogNameField.val();
 		var content = this.nodeDialogContentField.val();
@@ -138,7 +180,13 @@ ContentController.prototype = {
 		this.uiController.updateNode(this.node, name, content);
 	},
 	
-	deleteButtonClick: function() {
+	beforeCloseNodeDialog: function() {
+		this.markDialogFieldAsValid(this.nodeDialogNameField, true);
+		this.markDialogFieldAsValid(this.nodeDialogContentField, true);
+		$("#validationMessage").hide();
+	},
+
+	showDeleteConfirmDialog: function() {
 		var deleteConfirm = this.deleteConfirm.bind(this);
 		$("#deleteCurrentNodeConfirm").dialog({
 			resizable: false,
@@ -160,40 +208,6 @@ ContentController.prototype = {
 	
 	deleteConfirm: function() {
 		this.uiController.deleteNode(this.node.id);
-	},
-
-	setNode: function(node) {
-		this.node = node;
-		if (node == null) {
-			this.buttonbar.hide();
-			this.contentContainer.hide();
-			this.noContentContainer.show();
-		} else {
-			this.noContentContainer.hide();
-			this.buttonbar.show();
-			this.contentContainer.show();
-			this.nameElement.html(node.name);
-			this.contentElement.val(node.content);
-			this.idElement.html("(id: " + node.id + ")");
-			var isRootNode = (node.id == rootNodeId);
-			if (isRootNode) {
-				this.disableDeleteButton();
-			} else {
-				this.enableDeleteButton();
-			}
-		}
-	},
-	
-	enableDeleteButton: function() {
-		this.deleteButton.addClass(delBtnEnabledClass);
-		this.deleteButton.removeClass(delBtnDisabledClass);
-		this.deleteButton.click(this.deleteButtonClick.bind(this));
-	},
-	
-	disableDeleteButton: function() {
-		this.deleteButton.addClass(delBtnDisabledClass);
-		this.deleteButton.removeClass(delBtnEnabledClass);
-		this.deleteButton.off("click");
 	}
 }
 

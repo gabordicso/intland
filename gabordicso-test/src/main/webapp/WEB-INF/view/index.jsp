@@ -1,26 +1,27 @@
 <%@ page contentType="text/html; charset = UTF-8"%>
 <html>
 	<head>
-		<link rel="icon" href="favico.png" type="image/png" sizes="16x16"/>
+		<link rel="icon" href="img/favico.png" type="image/png" sizes="16x16"/>
 		<title>Gabor Dicso test task for Intland</title>
 
-		<script src="uicontroller.js"></script>
-		<script src="treecontroller.js"></script>
-		<script src="contentcontroller.js"></script>
-		<script src="restclient.js"></script>
+		<script src="js/uicontroller.js"></script>
+		<script src="js/treecontroller.js"></script>
+		<script src="js/contentcontroller.js"></script>
+		<script src="js/restclient.js"></script>
 
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-		 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
- 		<script src="loadingoverlay.min.js"></script><%/* source: https://gasparesganga.com/labs/jquery-loading-overlay/ */%>
-		<script src="topper.js"></script><%/* source: https://www.jqueryscript.net/other/top-notification-bar-topper.html */%>
-		<script src="jstree.min.js"></script><%/* source: https://www.jstree.com/api/#/ */%>
+		<script src="js-ext/jquery.min.js"></script>
+		<script src="js-ext/jquery-ui.min.js"></script>
+ 		<script src="js-ext/loadingoverlay.min.js"></script><%/* source: https://gasparesganga.com/labs/jquery-loading-overlay/ */%>
+		<script src="js-ext/topper.js"></script><%/* source: https://www.jqueryscript.net/other/top-notification-bar-topper.html */%>
+		<script src="js-ext/jstree.min.js"></script><%/* source: https://www.jstree.com/api/#/ */%>
 
-		<link rel="stylesheet" href="gabordicsotest.css" />
-		<link rel="stylesheet" href="jquery-ui.css">
-		<link rel="stylesheet" href="jquerydemos.css">
+		<link rel="stylesheet" href="css/gabordicsotest.css" />
 
-		<link rel="stylesheet" href="themes/default/style.min.css" /><% /* jstree */ %>
-		<link rel="stylesheet" href="topper.css" /><% /* topper */ %>
+		<link rel="stylesheet" href="css-ext/jquery-ui.css">
+		<link rel="stylesheet" href="css-ext/jquerydemos.css">
+
+		<link rel="stylesheet" href="css-ext/themes/default/style.min.css" /><% /* jstree */ %>
+		<link rel="stylesheet" href="css-ext/topper.css" /><% /* topper */ %>
 
 		<script>
 
@@ -89,6 +90,7 @@ waitForScriptLoad();
 	<body>
 		<div id="scriptLoading" style="display:block" class="scriptLoading">Loading...</div>
 		<div id="scriptLoadError" style="display:none" class="scriptLoadError">Could not load page properly. Please refresh your browser.</div>
+
 		<div id="app_container" style="display:none" class="app_container">
 			<div id="tree_pane" class="tree_pane">
 				<div id="tree_pane_inner_container" class="tree_pane_inner_container">
@@ -106,6 +108,7 @@ waitForScriptLoad();
 					</div>
 				</div>
 			</div>
+
 			<div id="content_pane" class="content_pane">
 				<div id="content_pane_inner_container" class="content_pane_inner_container">
 					<div><h1>Content</h1></div>
@@ -129,6 +132,7 @@ waitForScriptLoad();
 		<div style="display:none;" id="deleteCurrentNodeConfirm" title="Delete current node?">
 			<p><span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>This node and its children (if any) will be permanently deleted and cannot be recovered. Are you sure?</p>
 		</div>
+
 		<div style="display:none;" id="nodeDialog" title="Node Data">
 			<p>
 				Name:

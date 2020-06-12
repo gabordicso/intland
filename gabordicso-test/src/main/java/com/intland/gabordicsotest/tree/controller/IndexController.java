@@ -9,14 +9,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class IndexController {
 	@RequestMapping("/")
 	public String getIndex(Map<String, Object> model) {
-		model.put("message", "Gabor Dicso test task for Intland");
 		return "index";
 	}
-	
-	@RequestMapping("/test")
-	public String getTest(Map<String, Object> model) {
-		model.put("message", "Test");
-		return "test";
-	}
-	
 }

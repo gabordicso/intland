@@ -80,6 +80,10 @@ h2.noContent {
 	color: #2792d8;
 }
 
+.filterbar {
+	margin-bottom: 10px;
+}
+
 .btn_primary, .btn, .btn_a, .btn_a_disabled {
 	margin-left: 5px;
 	height: 30px; 
