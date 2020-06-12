@@ -20,6 +20,8 @@ var ContentController = function() {
 	this.deleteButton = $("#" + deleteButtonId);
 	this.nameElement = $("#" + nameElementId);
 	this.contentElement = $("#" + contentElementId);
+	this.nodeDialogNameField = $("#nodeName");
+	this.nodeDialogContentField = $("#nodeContent");
 }
 
 ContentController.prototype = {
@@ -37,17 +39,107 @@ ContentController.prototype = {
 	},
 	
 	addChildButtonClick: function() {
-		this.uiController.showInfo("addChildButtonClick");
-		
+		// this.uiController.showInfo("addChildButtonClick");
+		this.showNodeDialog(true);
 	},
 
 	editButtonClick: function() {
-		this.uiController.showInfo("editButtonClick");
+		// this.uiController.showInfo("editButtonClick");
+		this.showNodeDialog(false);
+	},
+	
+	showNodeDialog: function(isCreate) {
 		
+		var name = "";
+		var content = "";
+		var title = "Create node";
+		var callback = this.createNode.bind(this);
+		
+		if (!isCreate) {
+			name = this.node.name;
+			content = this.node.content;
+			title = "Update node";
+			callback = this.updateNode.bind(this);
+		}
+
+		var validate = this.validateNodeDialog.bind(this);
+		var beforeClose = this.closeNodeDialog.bind(this);
+		
+		this.nodeDialogNameField.val(name);
+		this.nodeDialogContentField.val(content);
+		
+		$("#nodeDialog").dialog({
+			resizable: false,
+			height: "auto",
+			width: 400,
+			modal: true,
+			draggable: false,
+			title: title,
+			buttons: {
+				"Save": function() {
+					if (validate()) {
+						callback();
+						beforeClose();
+						$(this).dialog("close");
+					}
+				},
+				Cancel: function() {
+					beforeClose();
+					$(this).dialog("close");
+				}
+			}
+		});
+	},
+	
+	closeNodeDialog: function() {
+		this.markFieldAsValid(this.nodeDialogNameField, true);
+		this.markFieldAsValid(this.nodeDialogContentField, true);
+		$("#validationMessage").hide();
 	},
 
+	validateNodeDialog: function() {
+		var name = this.nodeDialogNameField.val();
+		var content = this.nodeDialogContentField.val();
+		var valid = true;
+		if (name == null || name.trim() == "") {
+			this.markFieldAsValid(this.nodeDialogNameField, false);
+			valid = false;
+		} else {
+			this.markFieldAsValid(this.nodeDialogNameField, true);
+		}
+		if (content == null || content.trim() == "") {
+			this.markFieldAsValid(this.nodeDialogContentField, false);
+			valid = false;
+		} else {
+			this.markFieldAsValid(this.nodeDialogContentField, true);
+		}
+		if (!valid) {
+			$("#validationMessage").show();
+		} else {
+			$("#validationMessage").hide();
+		}
+		return valid;
+	},
+	
+	markFieldAsValid: function(field, isValid) {
+		field.addClass(isValid ? "nodeData_valid" : "nodeData_invalid");
+		field.removeClass(isValid ? "nodeData_invalid" : "nodeData_valid");
+	},
+	
+	createNode: function() {
+		var name = this.nodeDialogNameField.val();
+		var content = this.nodeDialogContentField.val();
+		this.uiController.createNode(this.node, name, content);
+	},
+	
+	updateNode: function() {
+		var name = this.nodeDialogNameField.val();
+		var content = this.nodeDialogContentField.val();
+		this.uiController.updateNode(this.node, name, content);
+	},
+	
 	deleteButtonClick: function() {
-		this.uiController.showInfo("deleteButtonClick");
+		// this.uiController.showInfo("deleteButtonClick");
 		
 		var deleteConfirm = this.deleteConfirm.bind(this);
 		$("#deleteCurrentNodeConfirm").dialog({

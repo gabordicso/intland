@@ -35,8 +35,24 @@ RESTClient.prototype = {
 		this.doCall(url, method_GET, null, done, fail, always);
 	},
 	
+	getNode: function(id, done, fail, always) {
+		var url = url_node + parseInt(id);
+		this.doCall(url, method_GET, null, done, fail, always);
+	},
+	
+	createNode: function(node, done, fail, always) {
+		var url = url_node;
+		var data = JSON.stringify({ "name": node.name, "content": node.content, "parentId": node.parentId, "id": null, "children": null });
+		this.doCall(url, method_POST, data, done, fail, always);
+	},
+	
+	updateNode: function(node, done, fail, always) {
+		var url = url_node;
+		var data = JSON.stringify({ "name": node.name, "content": node.content, "parentId": node.parentId, "id": node.id, "children": null });
+		this.doCall(url, method_PUT, data, done, fail, always);
+	},
+	
 	deleteNode: function(id, done, fail, always) {
-		id = - Math.abs(id); // TODO tmp, remove!
 		var url = url_node + parseInt(id);
 		this.doCall(url, method_DELETE, null, done, fail, always);
 	}

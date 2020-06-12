@@ -20,6 +20,7 @@ UIController.prototype = {
 		this.treeController = new TreeController(this);
 		this.contentController = new ContentController();
 
+		this.treeController.init(this);
 		this.contentController.init(this);
 		this.contentController.setNode({ name: "Test name", content: "Test content", id: 2, parentId: 1 });
 		// this.contentController.setNode({ name: "Test name", content: "Test content", id: 1, parentId: 1 });
@@ -30,49 +31,88 @@ UIController.prototype = {
 		this.treeContainer = $("#" + treeContainerDivId);
 		this.contentContainer = $("#" + contentContainerDivId);
 		
-		this.filterTextbox = $("#filterTextbox");
-		this.filterButton = $("#filterButton");
-		this.clearFilterButton = $("#clearFilterButton");
-
-		if (this.filterButtonClickHandler == null) {
-			this.filterButtonClickHandler = this.filterButton.click(this.onFilterButtonClick.bind(this));
-		}
-		if (this.clearFilterButtonClickHandler == null) {
-			this.clearFilterButtonClickHandler = this.clearFilterButton.click(this.onClearFilterButtonClick.bind(this));
-		}
 	},
 	
 	uninit: function() {
-		this.filterButton.off("click");
-		this.clearFilterButton.off("click");
+		this.treeController.uninit();
 		this.contentController.uninit();
 	},
 
-	deleteNode: function(id) {
-		this.onDeleteStart();
-		this.restClient.deleteNode(id, this.deleteNodeDone.bind(this), this.deleteNodeFail.bind(this), this.deleteNodeAlways.bind(this));
-	},
-	
-	onDeleteStart: function() {
+	onNodeManipulationStart: function() {
 		$("body").LoadingOverlay("show", this.getLoadingOverlayOptions());
 	},
 	
-	deleteNodeDone: function() {
+	onNodeManipulationEnd: function() {
+		$("body").LoadingOverlay("hide", this.getLoadingOverlayOptions());
+	},
+	
+	createNode: function(parentNode, name, content) {
+		this.onNodeManipulationStart();
+		var node = {
+			id: null,
+			parentId: parentNode.id,
+			name: name,
+			content: content
+		};
+		this.restClient.createNode(node, this.createNodeDone.bind(this), this.createNodeFail.bind(this), this.createNodeAlways.bind(this));
+	},
+	
+	createNodeDone: function(result) {
+		this.showInfo("Node created");
+		this.treeController.refresh(); // TODO if newly created node does not match an active filter, it won't be shown in the tree and should not be selectable
+		this.contentController.setNode(result); // TODO check if result can be used directly
+	},
+	
+	createNodeFail: function(xhr, status, errorThrown) {
+		this.showError("Node could not be created");
+	},
+	
+	createNodeAlways: function(xhr, status) {
+		this.onNodeManipulationEnd();
+	},
+	
+	updateNode: function(updatedNode, name, content) {
+		this.onNodeManipulationStart();
+		var node = {
+			id: updatedNode.id,
+			parentId: updatedNode.parentId,
+			name: name,
+			content: content
+		};
+		this.restClient.updateNode(node, this.updateNodeDone.bind(this), this.updateNodeFail.bind(this), this.updateNodeAlways.bind(this));
+	},
+	
+	updateNodeDone: function(result) {
+		this.showInfo("Node updated");
+		this.treeController.refresh();
+		this.contentController.setNode(result); // TODO check if result can be used directly
+	},
+	
+	updateNodeFail: function(xhr, status, errorThrown) {
+		this.showError("Node could not be updated");
+	},
+	
+	updateNodeAlways: function(xhr, status) {
+		this.onNodeManipulationEnd();
+	},
+	
+	deleteNode: function(id) {
+		this.onNodeManipulationStart();
+		this.restClient.deleteNode(id, this.deleteNodeDone.bind(this), this.deleteNodeFail.bind(this), this.deleteNodeAlways.bind(this));
+	},
+	
+	deleteNodeDone: function(result) {
 		this.showInfo("Node deleted");
 		this.treeController.refresh();
 		this.contentController.setNode(null);
 	},
 	
-	deleteNodeFail: function() {
+	deleteNodeFail: function(xhr, status, errorThrown) {
 		this.showError("Node could not be deleted");
 	},
 	
-	deleteNodeAlways: function() {
-		this.onDeleteEnd();
-	},
-	
-	onDeleteEnd: function() {
-		$("body").LoadingOverlay("hide", this.getLoadingOverlayOptions());
+	deleteNodeAlways: function(xhr, status) {
+		this.onNodeManipulationEnd();
 	},
 	
 	showInfo: function(info) {
@@ -96,25 +136,13 @@ UIController.prototype = {
 		});
 	},
 	
-	onFilterButtonClick: function() {
-		var filter = this.filterTextbox.val();
-		if (filter == null) {
-			filter = "";
-		}
-		filter = filter.trim();
-		if (filter == "") {
-			this.loadTree();
-		} else {
-			this.loadFilteredTree(filter);
-		}
-	},
-	
 	loadTree: function() {
 		this.onTreeLoadStart();
 		this.restClient.loadTree(this.loadTreeDone.bind(this), this.loadTreeFail.bind(this), this.loadTreeAlways.bind(this));
 	},
 	
 	loadTreeDone: function(tree) {
+		this.treeController.setTree(tree);
 		this.showInfo("Tree loaded");
 	},
 	
@@ -137,11 +165,6 @@ UIController.prototype = {
 	
 	loadFilteredTreeFail: function(xhr, status, errorThrown) {
 		this.showError("Could not load filtered tree, please try again");
-	},
-	
-	onClearFilterButtonClick: function() {
-		this.filterTextbox.val("");
-		this.onFilterButtonClick();
 	},
 	
 	onTreeLoadStart: function() {

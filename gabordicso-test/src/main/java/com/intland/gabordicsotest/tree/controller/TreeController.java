@@ -84,6 +84,7 @@ public class TreeController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
 	public Node postNode(@RequestBody Node node) throws ValidationException, IOException {
+		System.out.println("postNode() called, node: " + node);
 		return service.createNode(node);
 	}
 
@@ -94,6 +95,7 @@ public class TreeController {
             produces = MediaType.APPLICATION_JSON_VALUE)
 	public Node putNode(@RequestBody Node node) throws ValidationException, IOException {
 		// TODO should have a separate method for updating parent id only; url could be /node/{id}/parentId/{parentId}, method: PUT
+		System.out.println("putNode() called, node: " + node);
 		return service.updateNode(node);
 	}
 
@@ -103,6 +105,7 @@ public class TreeController {
             consumes = MediaType.ALL_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
 	public void deleteNode(@PathVariable(name = "id", required = true) Long id) throws IOException, ValidationException {
+		System.out.println("deleteNode() called, id: " + id);
 		service.deleteNodeById(id);
 	}
 }

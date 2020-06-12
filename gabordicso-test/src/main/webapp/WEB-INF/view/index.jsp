@@ -126,7 +126,19 @@ waitForScriptLoad();
 		</div>
 
 		<div style="display:none;" id="deleteCurrentNodeConfirm" title="Delete current node?">
-			<p><span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>This node will be permanently deleted and cannot be recovered. Are you sure?</p>
+			<p><span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>This node and its children (if any) will be permanently deleted and cannot be recovered. Are you sure?</p>
+		</div>
+		<div style="display:none;" id="nodeDialog" title="Node Data">
+			<p>
+				Name:
+				<br />
+				<input type="text" id="nodeName" class="nodeTextbox" placeholder="Enter node name..." />
+				<br />
+				Content:
+				<br />
+				<textarea id="nodeContent" class="content" placeholder="Enter node content..."></textarea>
+				<div id="validationMessage" class="validationMessage" style="display:none;">Please fill all fields.</div>
+			</p>
 		</div>
 	</body>
 </html>

@@ -5,6 +5,9 @@ public class ValidationException extends Exception {
 	
 	ValidationResult validationResult = null;
 	public ValidationException(ValidationResult validationResult) {
+		super("Validation error: " + validationResult);
 		this.validationResult = validationResult;
 	}
+	
+	
 }

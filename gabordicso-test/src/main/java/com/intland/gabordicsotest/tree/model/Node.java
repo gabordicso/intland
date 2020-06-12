@@ -61,4 +61,21 @@ public class Node {
 	public void setChildren(Set<Long> children) {
 		this.children = children;
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("Node [id=");
+		builder.append(id);
+		builder.append(", parentId=");
+		builder.append(parentId);
+		builder.append(", name=");
+		builder.append(name);
+		builder.append(", content=");
+		builder.append(content);
+		builder.append(", children=");
+		builder.append(children);
+		builder.append("]");
+		return builder.toString();
+	}
 }

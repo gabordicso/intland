@@ -14,4 +14,16 @@ public class ValidationResult {
 	public void addError(ValidationError error) {
 		errors.add(error);
 	}
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("ValidationResult [errors=");
+		for (ValidationError error : errors) {
+			builder.append(error.name());
+			builder.append("; ");
+		}
+		builder.append("]");
+		return builder.toString();
+	}
+	
 }
