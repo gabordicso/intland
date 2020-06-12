@@ -14,4 +14,4 @@ In the `gabordicso-test` folder, cd to `target` and run `java -jar gabordicso-te
 - Input is not properly sanitized, HTML code can be injected.
 - REST API could be improved in terms of efficiency.
 - Tree elements are not sorted.
-- When adding new nodes while tree filtering is active, it would be nice to warn the user that an active tree filtering can hide newly added nodes.
+- When adding new nodes while tree filtering is active, it would be nice to warn the user that an active tree filtering can hide newly added nodes. Same for deleting, a node might have children that are not visible in the tree but will get deleted anyway.
