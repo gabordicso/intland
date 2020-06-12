@@ -17,7 +17,6 @@ RESTClient.prototype = {
 			url: url,
 			type: method,
 			data: data,
-			dataType: "json",
 			contentType: "application/json"
 		})
 		.done(done)

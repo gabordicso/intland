@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,6 +22,7 @@ import com.intland.gabordicsotest.tree.service.validation.ValidationException;
 @RestController
 @RequestMapping("/")
 public class TreeController {
+	private static final Logger logger = LoggerFactory.getLogger(TreeController.class);
 
 	TreeService service;
 	
@@ -33,6 +36,7 @@ public class TreeController {
             consumes = MediaType.ALL_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
 	public Tree getTree() throws Exception {
+		logger.info("getTree() called");
 		try {
 			return service.getTree();
 		} catch (IOException e) {
@@ -47,6 +51,7 @@ public class TreeController {
             consumes = MediaType.ALL_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
 	public void deleteTree() throws Exception {
+		logger.info("deleteTree() called");
 		try {
 			service.resetTree();
 		} catch (IOException e) {
@@ -61,6 +66,7 @@ public class TreeController {
             consumes = MediaType.ALL_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
 	public FilteredTree getFilteredTree(@PathVariable(name = "filter", required = true) String filter) throws IOException {
+		logger.info("getFilteredTree() called, filter: " + filter);
 		try {
 			filter = java.net.URLDecoder.decode(filter, StandardCharsets.UTF_8.name()).trim();
 		} catch (UnsupportedEncodingException e) {
@@ -75,6 +81,7 @@ public class TreeController {
             consumes = MediaType.ALL_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
 	public Node getNode(@PathVariable(name = "id", required = true) Long id) throws IOException {
+		logger.info("getNode() called, id: " + id);
 		return service.getNodeById(id);
 	}
 
@@ -84,7 +91,7 @@ public class TreeController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
 	public Node postNode(@RequestBody Node node) throws ValidationException, IOException {
-		System.out.println("postNode() called, node: " + node);
+		logger.info("postNode() called, node: " + node);
 		return service.createNode(node);
 	}
 
@@ -95,7 +102,7 @@ public class TreeController {
             produces = MediaType.APPLICATION_JSON_VALUE)
 	public Node putNode(@RequestBody Node node) throws ValidationException, IOException {
 		// TODO should have a separate method for updating parent id only; url could be /node/{id}/parentId/{parentId}, method: PUT
-		System.out.println("putNode() called, node: " + node);
+		logger.info("putNode() called, node: " + node);
 		return service.updateNode(node);
 	}
 
@@ -105,7 +112,7 @@ public class TreeController {
             consumes = MediaType.ALL_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
 	public void deleteNode(@PathVariable(name = "id", required = true) Long id) throws IOException, ValidationException {
-		System.out.println("deleteNode() called, id: " + id);
+		logger.info("deleteNode() called, id: " + id);
 		service.deleteNodeById(id);
 	}
 }

@@ -22,7 +22,7 @@ UIController.prototype = {
 
 		this.treeController.init(this);
 		this.contentController.init(this);
-		this.contentController.setNode({ name: "Test name", content: "Test content", id: 2, parentId: 1 });
+		// this.contentController.setNode({ name: "Test name", content: "Test content", id: 2, parentId: 1 });
 		// this.contentController.setNode({ name: "Test name", content: "Test content", id: 1, parentId: 1 });
 		// this.contentController.setNode(null);
 		
@@ -38,12 +38,17 @@ UIController.prototype = {
 		this.contentController.uninit();
 	},
 
+	selectNode: function(selectedNode) {
+		this.contentController.setNode(selectedNode);
+	},
+	
 	onNodeManipulationStart: function() {
 		$("body").LoadingOverlay("show", this.getLoadingOverlayOptions());
 	},
 	
 	onNodeManipulationEnd: function() {
 		$("body").LoadingOverlay("hide", this.getLoadingOverlayOptions());
+		this.treeController.refresh();
 	},
 	
 	createNode: function(parentNode, name, content) {
@@ -59,7 +64,7 @@ UIController.prototype = {
 	
 	createNodeDone: function(result) {
 		this.showInfo("Node created");
-		this.treeController.refresh(); // TODO if newly created node does not match an active filter, it won't be shown in the tree and should not be selectable
+		this.treeController.refresh(result.id); // TODO if newly created node does not match an active filter, it won't be shown in the tree and should not be selectable
 		this.contentController.setNode(result); // TODO check if result can be used directly
 	},
 	
@@ -71,6 +76,17 @@ UIController.prototype = {
 		this.onNodeManipulationEnd();
 	},
 	
+	updateNodeParent: function(updatedNode, newParentId) {
+		this.onNodeManipulationStart();
+		var node = {
+			id: updatedNode.id,
+			parentId: newParentId,
+			name: updatedNode.name,
+			content: updatedNode.content
+		};
+		this.restClient.updateNode(node, this.updateNodeDone.bind(this), this.updateNodeFail.bind(this), this.updateNodeAlways.bind(this));
+	},
+
 	updateNode: function(updatedNode, name, content) {
 		this.onNodeManipulationStart();
 		var node = {
@@ -84,7 +100,7 @@ UIController.prototype = {
 	
 	updateNodeDone: function(result) {
 		this.showInfo("Node updated");
-		this.treeController.refresh();
+		this.treeController.refresh(result.id);
 		this.contentController.setNode(result); // TODO check if result can be used directly
 	},
 	
@@ -103,7 +119,7 @@ UIController.prototype = {
 	
 	deleteNodeDone: function(result) {
 		this.showInfo("Node deleted");
-		this.treeController.refresh();
+		this.treeController.refresh(null);
 		this.contentController.setNode(null);
 	},
 	
@@ -160,6 +176,7 @@ UIController.prototype = {
 	},
 	
 	loadFilteredTreeDone: function(filteredTree) {
+		this.treeController.setFilteredTree(filteredTree);
 		this.showInfo("Filtered tree loaded");
 	},
 	

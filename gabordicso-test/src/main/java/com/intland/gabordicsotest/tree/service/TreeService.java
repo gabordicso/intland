@@ -2,10 +2,13 @@ package com.intland.gabordicsotest.tree.service;
 
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.intland.gabordicsotest.tree.model.Node;
@@ -16,6 +19,8 @@ import com.intland.gabordicsotest.tree.service.validation.ValidationResult;
 
 @Service
 public class TreeService {
+	private static final Logger logger = LoggerFactory.getLogger(TreeService.class);
+	
 	public static final Long rootNodeId = 1L;
 	
 	private final TreeRepo repo;
@@ -71,7 +76,15 @@ public class TreeService {
 			Tree subTree = new Tree();
 			ConcurrentHashMap<Long, Node> nodes = new ConcurrentHashMap<>();
 			for (Long nodeId : nodeIdsOfMatchingSubTree) {
-				nodes.put(nodeId, getNodeById(nodeId));
+				Node nodeCopy = copyNode(getNodeById(nodeId));
+				Iterator<Long> iter = nodeCopy.getChildren().iterator();
+				while (iter.hasNext()) {
+					Long currentId = iter.next();
+					if (!nodeIdsOfMatchingSubTree.contains(currentId)) {
+						iter.remove();
+					}
+				}
+				nodes.put(nodeId, nodeCopy);
 			}
 			subTree.setNodes(nodes);
 			FilteredTree filteredTree = new FilteredTree(subTree, filter, matchingNodeIds);
@@ -231,6 +244,7 @@ public class TreeService {
 	private void saveCachedTree() throws IOException {
 		synchronized(TreeService.class) {
 			repo.saveTree(cachedTree);
+			logger.info("Tree saved");
 		}
 	}
 
@@ -307,6 +321,20 @@ public class TreeService {
 
 	private boolean isMatchingNode(Node node, String filter) {
 		return (node.getName().toUpperCase().contains(filter.toUpperCase()));
+	}
+
+	private Node copyNode(Node original) {
+		Node copy = new Node();
+		
+		copy.setId(original.getId());
+		copy.setParentId(original.getParentId());
+		copy.setName(original.getName());
+		copy.setContent(original.getContent());
+		Set<Long> childIds = ConcurrentHashMap.newKeySet();
+		childIds.addAll(original.getChildren());
+		copy.setChildren(childIds);
+
+		return copy;
 	}
 
 }

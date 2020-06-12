@@ -12,6 +12,11 @@ TreeController.prototype = {
 		this.filterButton = $("#filterButton");
 		this.clearFilterButton = $("#clearFilterButton");
 
+		this.treeDiv = $('#jstree_div');
+		this.lastTreeElementInstance = null;
+		this.lastLoadedTree = null;
+		this.nextTreeElementId = 0;
+		this.noResultsDiv = $('#' + noTreeContainerId)
 		if (this.filterButtonClickHandler == null) {
 			this.filterButtonClickHandler = this.filterButton.click(this.onFilterButtonClick.bind(this));
 		}
@@ -52,31 +57,147 @@ TreeController.prototype = {
 		}
 	},
 	
-	setTree: function(tree) {
-		var data = this.getTreeDataFromTree(tree);
+	setTree: function(tree, selectedNodeId) {
+		this.lastLoadedTree = tree;
+		var isEmptyTree = tree.nodes.length <= 0;
+		if (isEmptyTree) {
+			this.treeDiv.hide();
+			this.noResultsDiv.show();
+		} else {
+			this.noResultsDiv.hide();
+			this.treeDiv.show();
+			var data = this.getTreeDataFromTree(tree, selectedNodeId, null);
+			if (this.lastTreeElementInstance) {
+				this.lastTreeElementInstance.remove();
+			}
+			this.lastTreeElementInstance = this.getNewTreePlaceholder().jstree({
+				'core': {
+					'data': data,
+					'multiple': false,
+					"check_callback": true
+				},
+				"plugins": [
+					"dnd", "search", "state", "types", "wholerow"
+				]
+			}).on('changed.jstree', function (e, data) {
+			    var ids = [];
+			    for(var i = 0; i < data.selected.length; i++) {
+			    	ids.push(data.instance.get_node(data.selected[i]).id);
+			    }
+			    var selectedId = null;
+			    if (ids.length > 0) {
+			    	selectedId = ids[0];
+			    }
+			    this.selectNode(selectedId);
+			  }.bind(this))
+			  .on('dnd_stop.vakata.jstree', function(e, data) {alert(0);});
+		}
+
 		this.lastFilter = null;
 	},
 	
-	setFilteredTree: function(filteredTree) {
+	setFilteredTree: function(filteredTree, selectedNodeId) {
+		
+		var tree = filteredTree.tree;
+		this.lastLoadedTree = tree;
+		var isEmptyTree = tree.nodes.length <= 0;
+		if (isEmptyTree) {
+			this.treeDiv.hide();
+			this.noResultsDiv.show();
+		} else {
+			this.noResultsDiv.hide();
+			this.treeDiv.show();
+			var data = this.getTreeDataFromTree(tree, selectedNodeId, filteredTree.matchingNodeIds);
+			if (this.lastTreeElementInstance) {
+				this.lastTreeElementInstance.remove();
+			}
+			this.lastTreeElementInstance = this.getNewTreePlaceholder().jstree({
+				'core': {
+					'data': data,
+					'multiple': false,
+					"check_callback": true
+				},
+				"plugins": [
+					"dnd", "search", "state", "types", "wholerow"
+				]
+			})
+			.on('move_node.jstree', function(e, data) {
+				this.moveNode(data.node.id, data.node.parent);
+			}.bind(this))
+			.on('changed.jstree', function (e, data) {
+			    var ids = [];
+			    for(var i = 0; i < data.selected.length; i++) {
+			    	ids.push(data.instance.get_node(data.selected[i]).id);
+			    }
+			    var selectedId = null;
+			    if (ids.length > 0) {
+			    	selectedId = ids[0];
+			    }
+			    this.selectNode(selectedId);
+			  }.bind(this))
+			  ;
+		}
+
 		this.lastFilter = filteredTree.filter;
 	},
 	
-	refresh: function() {
-		this.processFilter(this.lastFilter); // may cause inconsistencies if user updates input field but does not click Filter, and refresh is triggered; should use cached last filter
-		// TODO refresh depending on last action (filter or full load)
+	moveNode: function(nodeId, newParentId) {
+		var updatedNode = this.lastLoadedTree.nodes[nodeId];
+		this.uiController.updateNodeParent(updatedNode, newParentId);
 	},
 	
-	getTreeDataFromTree: function(tree) {
-		var data = Array();
-		var nodes = [];
-		if (Array.isArray(tree)) {
-			tree.forEach(function(node) {
-				nodes[node.id] = node;
-			});
+	selectNode: function(nodeId) {
+		var selectedNode = null;
+		if (nodeId !== undefined && this.lastLoadedTree != null && this.lastLoadedTree.nodes[nodeId] != null) {
+			selectedNode = this.lastLoadedTree.nodes[nodeId];
 		}
-		var currentNodeId = rootNodeId;
-		var currentNode = nodes[currentNodeId];
-		
+		this.uiController.selectNode(selectedNode);
+	},
+	
+	getNewTreePlaceholder: function() {
+		var id = "treePlaceholder" + this.nextTreeElementId++;
+		$('#jstree_div').append('<div id="' + id + '"></div>');
+		return $('#' + id);
+	},
+	
+	refresh: function(selectedNodeId) {
+		// selectedNodeId is null if refresh triggered by delete
+		// TODO if tree is filtered and selectedNodeId is not visible, select root; if root also not visible, do nothing
+		this.processFilter(this.lastFilter);
+	},
+	
+	getTreeDataFromTree: function(tree, selectedNodeId, enabledNodeIds) {
+		var nodes = tree.nodes;
+		if (nodes[rootNodeId]) {		
+			return this.getTreeDataOfNodes([ rootNodeId ], nodes, selectedNodeId, enabledNodeIds);
+		}
+		return { };
+	},
+	
+	getTreeDataOfNodes: function(nodeIdArray, nodes, selectedNodeId, enabledNodeIds) {
+		var data = Array();
+		nodeIdArray.forEach(function(nodeId) {
+			var currentNode = nodes[nodeId];
+			if (currentNode != null) {
+				var selected = (currentNode.id == parseInt(selectedNodeId));
+				var disabled = !(enabledNodeIds == null || enabledNodeIds.includes(currentNode.id));
+				var nodeTreeData = {
+					id: currentNode.id,
+					text: currentNode.name,
+					state: {
+						opened: false,
+						selected: selected,
+						disabled: disabled
+					}
+				};
+				var childIds = currentNode.children;
+				if (Array.isArray(childIds) && childIds.length > 0) {
+					nodeTreeData.children = this.getTreeDataOfNodes(childIds, nodes, selectedNodeId, enabledNodeIds);
+				}
+				data.push(nodeTreeData);
+			}
+		}.bind(this));
+		return data;
 		/*
 		[
 			{
