@@ -63,6 +63,7 @@ UIController.prototype = {
 	
 	createNodeFail: function(xhr, status, errorThrown) {
 		this.showError("Node could not be created");
+		this.treeController.refresh(null);
 	},
 	
 	createNodeAlways: function(xhr, status) {
@@ -101,6 +102,7 @@ UIController.prototype = {
 	
 	updateNodeFail: function(xhr, status, errorThrown) {
 		this.showError("Node could not be updated");
+		this.treeController.refresh(null);
 	},
 	
 	updateNodeAlways: function(xhr, status) {
@@ -122,6 +124,7 @@ UIController.prototype = {
 	
 	deleteNodeFail: function(xhr, status, errorThrown) {
 		this.showError("Node could not be deleted");
+		this.treeController.refresh(null);
 	},
 	
 	deleteNodeAlways: function(xhr, status) {

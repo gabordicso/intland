@@ -20,6 +20,7 @@ TreeController.prototype = {
 		this.lastTreeElementInstance = null;
 		this.lastLoadedTree = null;
 		this.nextTreeElementId = 0;
+		this.nodeIdToSelectAfterRefresh = null;
 		this.noResultsDiv = $('#' + noTreeContainerId)
 		if (this.filterButtonClickHandler == null) {
 			this.filterButtonClickHandler = this.filterButton.click(this.onFilterButtonClick.bind(this));
@@ -150,10 +151,20 @@ TreeController.prototype = {
 		if (nodeId !== undefined && this.lastLoadedTree != null && this.lastLoadedTree.nodes[nodeId] != null) {
 			selectedNode = this.lastLoadedTree.nodes[nodeId];
 		}
+		if (selectedNode != null) {
+			this.nodeIdToSelectAfterRefresh = selectedNode.id;
+		} else {
+			this.nodeIdToSelectAfterRefresh = null;
+		}
 		this.uiController.selectNode(selectedNode);
 	},
 	
 	moveNode: function(nodeId, newParentId) {
+		if (isNaN(newParentId)) {
+			// jstree allows moving a node up to the root level, we don't allow this
+			this.refresh(null);
+			return;
+		}
 		var updatedNode = this.lastLoadedTree.nodes[nodeId];
 		this.uiController.updateNodeParent(updatedNode, newParentId);
 	},
