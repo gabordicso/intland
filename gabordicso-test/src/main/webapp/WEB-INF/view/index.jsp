@@ -105,6 +105,7 @@ waitForScriptLoad();
 					</div>
 					<div id="noTree_container" class="tree_container" style="display:block;">
 						<h2 class="noContent">No results</h2>
+						<input type="submit" id="treeInitButton" value="Initialize tree" class="btn" style="display:none;" />
 					</div>
 				</div>
 			</div>
@@ -112,7 +113,7 @@ waitForScriptLoad();
 			<div id="content_pane" class="content_pane">
 				<div id="content_pane_inner_container" class="content_pane_inner_container">
 					<div><h1>Content</h1></div>
-					<div id="buttonbar" class="buttonbar">
+					<div id="buttonbar" class="buttonbar" style="display:none;">
 						<input type="submit" id="addChildButton" value="Add new child to current node" class="btn_primary" />
 						<input type="submit" id="editButton" value="Edit current node" class="btn" />
 						<a id="deleteButton" class="btn_a_disabled" href="javascript: void(0)">Delete current node</a>

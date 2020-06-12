@@ -11,7 +11,7 @@
 	<groupId>com.intland</groupId>
 	<artifactId>gabordicso-test</artifactId>
 	<packaging>war</packaging>
-	<version>0.0.1-RELEASE</version>
+	<version>0.0.2-RELEASE</version>
 	<name>gabordicso-test</name>
 	<description>Intland test task implementation by Gabor Dicso</description>
 

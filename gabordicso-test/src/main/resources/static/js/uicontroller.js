@@ -46,9 +46,13 @@ UIController.prototype = {
 
 	createNode: function(parentNode, name, content) {
 		this.onNodeManipulationStart();
+		var parentId = null;
+		if (parentNode != null) {
+			parentId = parentNode.id;
+		}
 		var node = {
 			id: null,
-			parentId: parentNode.id,
+			parentId: parentId,
 			name: name,
 			content: content
 		};
@@ -145,6 +149,7 @@ UIController.prototype = {
 	
 	loadTreeFail: function(xhr, status, errorThrown) {
 		this.showError("Could not load tree, please try again");
+		this.treeController.treeReadError();
 	},
 	
 	loadTreeAlways: function(xhr, status) {
@@ -164,7 +169,27 @@ UIController.prototype = {
 	loadFilteredTreeFail: function(xhr, status, errorThrown) {
 		this.showError("Could not load filtered tree, please try again");
 	},
+
+
+
+	initTree: function() {
+		this.onTreeLoadStart();
+		this.restClient.initTree(this.initTreeDone.bind(this), this.initTreeFail.bind(this), this.initTreeAlways.bind(this));
+	},
 	
+	initTreeDone: function() {
+		this.showInfo("Tree initialized");
+		this.treeController.treeInitialized();
+	},
+	
+	initTreeFail: function() {
+		this.showError("Could not initialize tree, please try again");
+	},
+	
+	initTreeAlways: function() {
+		this.onTreeLoadEnd();
+	},
+
 
 
 	showInfo: function(info) {

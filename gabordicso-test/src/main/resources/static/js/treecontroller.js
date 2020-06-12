@@ -3,6 +3,7 @@ const filterTextboxId = "filterTextbox";
 const filterButtonId = "filterButton";
 const clearFilterButtonId = "clearFilterButton";
 const jstreeDivId = "jstree_div";
+const treeInitButtonId = "treeInitButton";
 
 var TreeController = function() { }
 
@@ -21,7 +22,9 @@ TreeController.prototype = {
 		this.lastLoadedTree = null;
 		this.nextTreeElementId = 0;
 		this.nodeIdToSelectAfterRefresh = null;
-		this.noResultsDiv = $('#' + noTreeContainerId)
+		this.noResultsDiv = $('#' + noTreeContainerId);
+		this.treeInitButton = $('#' + treeInitButtonId);
+
 		if (this.filterButtonClickHandler == null) {
 			this.filterButtonClickHandler = this.filterButton.click(this.onFilterButtonClick.bind(this));
 		}
@@ -33,6 +36,7 @@ TreeController.prototype = {
 	uninit: function() {
 		this.filterButton.off("click");
 		this.clearFilterButton.off("click");
+		this.treeInitButton.off("click");
 		this.uninitTreeElement();
 	},
 
@@ -75,7 +79,8 @@ TreeController.prototype = {
 	
 
 
-	setTree: function(tree, selectedNodeId, enabledNodeIds) {
+	setTree: function(tree, selectedNodeId, enabledNodeIds, isFiltered) {
+		isFiltered = !!isFiltered;
 		if (selectedNodeId == null) {
 			selectedNodeId = this.nodeIdToSelectAfterRefresh;
 		}
@@ -129,7 +134,7 @@ TreeController.prototype = {
 	
 	setFilteredTree: function(filteredTree) {
 		var tree = filteredTree.tree;
-		this.setTree(tree, null, filteredTree.matchingNodeIds);
+		this.setTree(tree, null, filteredTree.matchingNodeIds, true);
 		this.lastFilter = filteredTree.filter;
 	},
 	
@@ -203,6 +208,30 @@ TreeController.prototype = {
 			}
 		}.bind(this));
 		return data;
+	},
+
+
+
+	treeReadError: function() {
+		this.showTreeInitButton();
+	},
+
+	showTreeInitButton: function() {
+		this.treeInitButton.click(this.treeInitButtonClick.bind(this));
+		this.treeInitButton.show();
+	},
+
+	hideTreeInitButton: function() {
+		this.treeInitButton.hide();
+	},
+	
+	treeInitButtonClick: function() {
+		this.uiController.initTree();
+	},
+	
+	treeInitialized: function() {
+		this.hideTreeInitButton();
+		location.reload();
 	}
 }
 

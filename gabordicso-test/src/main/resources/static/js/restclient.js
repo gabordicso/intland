@@ -54,5 +54,9 @@ RESTClient.prototype = {
 	deleteNode: function(id, done, fail, always) {
 		var url = url_node + parseInt(id);
 		this.doCall(url, method_DELETE, null, done, fail, always);
+	},
+
+	initTree: function(done, fail, always) {
+		this.doCall(url_tree, method_DELETE, null, done, fail, always);
 	}
 }
