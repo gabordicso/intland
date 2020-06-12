@@ -22,15 +22,13 @@ UIController.prototype = {
 
 		this.treeController.init(this);
 		this.contentController.init(this);
-		// this.contentController.setNode({ name: "Test name", content: "Test content", id: 2, parentId: 1 });
-		// this.contentController.setNode({ name: "Test name", content: "Test content", id: 1, parentId: 1 });
-		// this.contentController.setNode(null);
 		
 		this.treePane = $("#" + treePaneDivId);
 		this.contentPane = $("#" + contentPaneDivId);
 		this.treeContainer = $("#" + treeContainerDivId);
 		this.contentContainer = $("#" + contentContainerDivId);
 		
+		this.loadTree();
 	},
 	
 	uninit: function() {
@@ -48,7 +46,6 @@ UIController.prototype = {
 	
 	onNodeManipulationEnd: function() {
 		$("body").LoadingOverlay("hide", this.getLoadingOverlayOptions());
-		this.treeController.refresh();
 	},
 	
 	createNode: function(parentNode, name, content) {
@@ -65,7 +62,7 @@ UIController.prototype = {
 	createNodeDone: function(result) {
 		this.showInfo("Node created");
 		this.treeController.refresh(result.id); // TODO if newly created node does not match an active filter, it won't be shown in the tree and should not be selectable
-		this.contentController.setNode(result); // TODO check if result can be used directly
+		this.contentController.setNode(result);
 	},
 	
 	createNodeFail: function(xhr, status, errorThrown) {
@@ -158,7 +155,7 @@ UIController.prototype = {
 	},
 	
 	loadTreeDone: function(tree) {
-		this.treeController.setTree(tree);
+		this.treeController.setTree(tree, rootNodeId, null);
 		this.showInfo("Tree loaded");
 	},
 	

@@ -119,6 +119,7 @@ waitForScriptLoad();
 					</div>
 					<div id="content_container" class="content_container" style="display:none;">
 						<h2 id="nameDisplay" class="nameDisplay">Name</h2>
+						<div id="idElement" class="idElement"></div>
 						<textarea id="contentDisplay" class="contentDisplay" disabled=1>Content</textarea>
 					</div>
 				</div>

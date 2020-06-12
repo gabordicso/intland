@@ -10,6 +10,7 @@ const editButtonId = "editButton";
 const deleteButtonId = "deleteButton";
 const nameElementId = "nameDisplay";
 const contentElementId = "contentDisplay";
+const idElementId = "idElement";
 
 var ContentController = function() {
 	this.contentContainer = $("#" + contentContainerId);
@@ -20,6 +21,7 @@ var ContentController = function() {
 	this.deleteButton = $("#" + deleteButtonId);
 	this.nameElement = $("#" + nameElementId);
 	this.contentElement = $("#" + contentElementId);
+	this.idElement = $("#" + idElementId);
 	this.nodeDialogNameField = $("#nodeName");
 	this.nodeDialogContentField = $("#nodeContent");
 }
@@ -39,12 +41,10 @@ ContentController.prototype = {
 	},
 	
 	addChildButtonClick: function() {
-		// this.uiController.showInfo("addChildButtonClick");
 		this.showNodeDialog(true);
 	},
 
 	editButtonClick: function() {
-		// this.uiController.showInfo("editButtonClick");
 		this.showNodeDialog(false);
 	},
 	
@@ -92,8 +92,8 @@ ContentController.prototype = {
 	},
 	
 	closeNodeDialog: function() {
-		this.markFieldAsValid(this.nodeDialogNameField, true);
-		this.markFieldAsValid(this.nodeDialogContentField, true);
+		this.markDialogFieldAsValid(this.nodeDialogNameField, true);
+		this.markDialogFieldAsValid(this.nodeDialogContentField, true);
 		$("#validationMessage").hide();
 	},
 
@@ -102,16 +102,16 @@ ContentController.prototype = {
 		var content = this.nodeDialogContentField.val();
 		var valid = true;
 		if (name == null || name.trim() == "") {
-			this.markFieldAsValid(this.nodeDialogNameField, false);
+			this.markDialogFieldAsValid(this.nodeDialogNameField, false);
 			valid = false;
 		} else {
-			this.markFieldAsValid(this.nodeDialogNameField, true);
+			this.markDialogFieldAsValid(this.nodeDialogNameField, true);
 		}
 		if (content == null || content.trim() == "") {
-			this.markFieldAsValid(this.nodeDialogContentField, false);
+			this.markDialogFieldAsValid(this.nodeDialogContentField, false);
 			valid = false;
 		} else {
-			this.markFieldAsValid(this.nodeDialogContentField, true);
+			this.markDialogFieldAsValid(this.nodeDialogContentField, true);
 		}
 		if (!valid) {
 			$("#validationMessage").show();
@@ -121,7 +121,7 @@ ContentController.prototype = {
 		return valid;
 	},
 	
-	markFieldAsValid: function(field, isValid) {
+	markDialogFieldAsValid: function(field, isValid) {
 		field.addClass(isValid ? "nodeData_valid" : "nodeData_invalid");
 		field.removeClass(isValid ? "nodeData_invalid" : "nodeData_valid");
 	},
@@ -139,8 +139,6 @@ ContentController.prototype = {
 	},
 	
 	deleteButtonClick: function() {
-		// this.uiController.showInfo("deleteButtonClick");
-		
 		var deleteConfirm = this.deleteConfirm.bind(this);
 		$("#deleteCurrentNodeConfirm").dialog({
 			resizable: false,
@@ -176,6 +174,7 @@ ContentController.prototype = {
 			this.contentContainer.show();
 			this.nameElement.html(node.name);
 			this.contentElement.val(node.content);
+			this.idElement.html("(id: " + node.id + ")");
 			var isRootNode = (node.id == rootNodeId);
 			if (isRootNode) {
 				this.disableDeleteButton();

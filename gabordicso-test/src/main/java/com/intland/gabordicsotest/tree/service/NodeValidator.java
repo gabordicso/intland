@@ -64,7 +64,7 @@ public class NodeValidator {
 	}
 
 	public static void sanitizeNode(Node node) {
-		PolicyFactory policy = Sanitizers.FORMATTING.and(Sanitizers.LINKS);
+		PolicyFactory policy = Sanitizers.STYLES;
 		String name = node.getName();
 		String content = node.getContent();
 		String safeName = policy.sanitize(name);

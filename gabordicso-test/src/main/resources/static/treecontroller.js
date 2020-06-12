@@ -57,57 +57,16 @@ TreeController.prototype = {
 		}
 	},
 	
-	setTree: function(tree, selectedNodeId) {
+	setTree: function(tree, selectedNodeId, enabledNodeIds) {
 		this.lastLoadedTree = tree;
-		var isEmptyTree = tree.nodes.length <= 0;
+		var isEmptyTree = (tree.nodes[rootNodeId] == null);
 		if (isEmptyTree) {
 			this.treeDiv.hide();
 			this.noResultsDiv.show();
 		} else {
 			this.noResultsDiv.hide();
 			this.treeDiv.show();
-			var data = this.getTreeDataFromTree(tree, selectedNodeId, null);
-			if (this.lastTreeElementInstance) {
-				this.lastTreeElementInstance.remove();
-			}
-			this.lastTreeElementInstance = this.getNewTreePlaceholder().jstree({
-				'core': {
-					'data': data,
-					'multiple': false,
-					"check_callback": true
-				},
-				"plugins": [
-					"dnd", "search", "state", "types", "wholerow"
-				]
-			}).on('changed.jstree', function (e, data) {
-			    var ids = [];
-			    for(var i = 0; i < data.selected.length; i++) {
-			    	ids.push(data.instance.get_node(data.selected[i]).id);
-			    }
-			    var selectedId = null;
-			    if (ids.length > 0) {
-			    	selectedId = ids[0];
-			    }
-			    this.selectNode(selectedId);
-			  }.bind(this))
-			  .on('dnd_stop.vakata.jstree', function(e, data) {alert(0);});
-		}
-
-		this.lastFilter = null;
-	},
-	
-	setFilteredTree: function(filteredTree, selectedNodeId) {
-		
-		var tree = filteredTree.tree;
-		this.lastLoadedTree = tree;
-		var isEmptyTree = tree.nodes.length <= 0;
-		if (isEmptyTree) {
-			this.treeDiv.hide();
-			this.noResultsDiv.show();
-		} else {
-			this.noResultsDiv.hide();
-			this.treeDiv.show();
-			var data = this.getTreeDataFromTree(tree, selectedNodeId, filteredTree.matchingNodeIds);
+			var data = this.getTreeDataFromTree(tree, selectedNodeId, enabledNodeIds);
 			if (this.lastTreeElementInstance) {
 				this.lastTreeElementInstance.remove();
 			}
@@ -134,10 +93,15 @@ TreeController.prototype = {
 			    	selectedId = ids[0];
 			    }
 			    this.selectNode(selectedId);
-			  }.bind(this))
-			  ;
+			  }.bind(this));
 		}
 
+		this.lastFilter = null;
+	},
+	
+	setFilteredTree: function(filteredTree, selectedNodeId) {
+		var tree = filteredTree.tree;
+		this.setTree(tree, selectedNodeId, filteredTree.matchingNodeIds);
 		this.lastFilter = filteredTree.filter;
 	},
 	
