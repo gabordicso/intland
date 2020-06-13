@@ -144,12 +144,14 @@ UIController.prototype = {
 	
 	loadTreeDone: function(tree) {
 		this.treeController.setTree(tree, null, null);
+		this.treeContainer.show();
 		this.showInfo("Tree loaded");
 	},
 	
 	loadTreeFail: function(xhr, status, errorThrown) {
 		this.showError("Could not load tree, please try again");
 		this.treeController.treeReadError();
+		this.treeContainer.hide();
 	},
 	
 	loadTreeAlways: function(xhr, status) {
@@ -163,6 +165,7 @@ UIController.prototype = {
 	
 	loadFilteredTreeDone: function(filteredTree) {
 		this.treeController.setFilteredTree(filteredTree);
+		this.treeContainer.show();
 		this.showInfo("Filtered tree loaded");
 	},
 	
@@ -178,8 +181,9 @@ UIController.prototype = {
 	},
 	
 	initTreeDone: function() {
-		this.showInfo("Tree initialized");
 		this.treeController.treeInitialized();
+		this.treeContainer.show();
+		this.showInfo("Tree initialized");
 	},
 	
 	initTreeFail: function() {
@@ -228,7 +232,6 @@ UIController.prototype = {
 
 	onTreeLoadEnd: function() {
 		this.treePane.LoadingOverlay("hide", this.getLoadingOverlayOptions());
-		this.treeContainer.show();
 	},
 
 	onContentLoadStart: function() {
