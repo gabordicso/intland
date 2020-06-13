@@ -123,6 +123,7 @@ ContentController.prototype = {
 			modal: true,
 			draggable: false,
 			title: title,
+			close: beforeClose,
 			buttons: {
 				"Save": function() {
 					if (validate()) {
