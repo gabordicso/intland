@@ -8,7 +8,7 @@ Clone the project, cd to the `gabordicso-test` folder, and run `mvn clean packag
 #### Configuration
 The path of the file in which to store the tree can be set in `src/main/resources/application.properties`. The name of the property is `gabordicsotest.treerepo.filePath`. Its default value is `tree.json`. If you wish to specify a different path, do so before building the project.
 ### Run
-In the `gabordicso-test` folder, cd to `target` and run `java -jar gabordicso-test-0.0.2-RELEASE.war`. Then open http://localhost:8080/ in your browser.
+In the `gabordicso-test` folder, cd to `target` and run `java -jar gabordicso-test-0.0.3-RELEASE.war`. Then open http://localhost:8080/ in your browser.
 ## Known problems
 - The project does not provide protection against CSRF attacks.
 - Input is not properly sanitized, HTML code can be injected.
