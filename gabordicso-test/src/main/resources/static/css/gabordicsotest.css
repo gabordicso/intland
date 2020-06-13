@@ -54,7 +54,7 @@ h2.noContent {
 	background-color: #f2f9fd;
 	height: 100%;
 	float: left;
-	
+	overflow: auto;
 }
 
 .content_container, .tree_container {
@@ -113,7 +113,19 @@ h2.noContent {
 	background-color: #daecfa;
 }
 
+.btn_primary:hover {
+	background-color: #daecfa;
+}
+
+.btn:hover {
+	background-color: #b7dbf2;
+}
+
 .btn_a {
+}
+
+.btn_a:hover {
+	color: #5588aa;
 }
 
 .btn_a_disabled {
