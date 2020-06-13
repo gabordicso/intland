@@ -54,6 +54,10 @@ h2.noContent {
 	background-color: #f2f9fd;
 	height: 100%;
 	float: left;
+	
+}
+
+.content_container, .tree_container {
 	overflow: auto;
 }
 
