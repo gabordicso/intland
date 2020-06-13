@@ -62,7 +62,12 @@ h2.noContent {
 }
 
 .tree_container {
-	background-color: ;
+}
+
+.jstree_div {
+	height: calc(100% - 137px);
+	background-color: #f2f9fd;
+	overflow: auto;
 }
 
 .filterTextbox, .nodeTextbox {

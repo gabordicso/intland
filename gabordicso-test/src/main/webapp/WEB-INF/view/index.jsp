@@ -101,9 +101,9 @@ waitForScriptLoad();
 						<a id="clearFilterButton" class="btn_a" href="javascript: void(0)">Clear filter</a>
 					</div>
 					<div id="tree_container" class="tree_container" style="display:none;">
-						<div id="jstree_div"></div>
+						<div id="jstree_div" class="jstree_div"></div>
 					</div>
-					<div id="noTree_container" class="tree_container" style="display:block;">
+					<div id="noTree_container" style="display:block;">
 						<h2 class="noContent">No results</h2>
 						<input type="submit" id="treeInitButton" value="Initialize tree" class="btn" style="display:none;" />
 					</div>
